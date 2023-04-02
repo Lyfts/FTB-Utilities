@@ -1,0 +1,5 @@
+// Add your dependencies here
+
+dependencies {
+    api("com.github.GTNewHorizons:FTB-Library")
+}
