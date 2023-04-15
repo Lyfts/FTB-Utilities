@@ -83,7 +83,7 @@ public class CommandPing extends CmdBase {
 							// TODO Auto-generated method stub
 						}
 					});
-					networkManager.scheduleOutboundPacket(new C00Handshake(address.getIP(), address.getPort(), EnumConnectionState.STATUS));
+					networkManager.scheduleOutboundPacket(new C00Handshake(5, address.getIP(), address.getPort(), EnumConnectionState.STATUS));
 					networkManager.scheduleOutboundPacket(new C00PacketServerQuery());
 				} catch (UnknownHostException e) {
 					e.printStackTrace();

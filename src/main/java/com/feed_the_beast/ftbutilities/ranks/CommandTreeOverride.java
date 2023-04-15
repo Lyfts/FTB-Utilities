@@ -1,12 +1,12 @@
 package com.feed_the_beast.ftbutilities.ranks;
 
 import com.feed_the_beast.ftblib.lib.command.CmdTreeBase;
+import com.feed_the_beast.ftblib.lib.command.CommandTreeBase;
+
+import cpw.mods.fml.common.ModContainer;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.server.command.CommandTreeBase;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -18,9 +18,9 @@ public class CommandTreeOverride extends CmdTreeBase {
 	public final CommandTreeBase mirrored;
 
 	public CommandTreeOverride(CommandTreeBase c, String parent, @Nullable ModContainer container) {
-		super(c.getName());
+		super(c.getCommandName());
 		mirrored = c;
-		String node = parent + '.' + mirrored.getName();
+		String node = parent + '.' + mirrored.getCommandName();
 
 		for (ICommand command : mirrored.getSubCommands()) {
 			addSubcommand(CommandOverride.create(command, node, container));
@@ -28,13 +28,13 @@ public class CommandTreeOverride extends CmdTreeBase {
 	}
 
 	@Override
-	public String getUsage(ICommandSender sender) {
-		return mirrored.getUsage(sender);
+	public String getCommandUsage(ICommandSender sender) {
+		return mirrored.getCommandUsage(sender);
 	}
 
 	@Override
 	public List<String> getCommandAliases() {
-		return mirrored.getAliases();
+		return mirrored.getCommandAliases();
 	}
 
 	@Override
@@ -45,9 +45,9 @@ public class CommandTreeOverride extends CmdTreeBase {
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 1) {
-			mirrored.execute(server, sender, args);
+			mirrored.processCommand(sender, args);
 		} else {
-			super.execute(server, sender, args);
+			super.processCommand(sender, args);
 		}
 	}
 }

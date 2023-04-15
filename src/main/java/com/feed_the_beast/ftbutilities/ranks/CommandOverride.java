@@ -39,7 +39,7 @@ public class CommandOverride extends CommandBase {
 		node = parent + '.' + mirrored.getCommandName();
 		Ranks.INSTANCE.commands.put(node, this);
 
-		String usageS = getUsage(Ranks.INSTANCE.universe.server);
+		String usageS = getCommandUsage(Ranks.INSTANCE.universe.server);
 
 		if (usageS == null || usageS.isEmpty() || usageS.indexOf('/') != -1 || usageS.indexOf('%') != -1
 				|| usageS.indexOf(' ') != -1) {
@@ -52,12 +52,12 @@ public class CommandOverride extends CommandBase {
 	}
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return mirrored.getCommandName();
 	}
 
 	@Override
-	public String getUsage(ICommandSender sender) {
+	public String getCommandUsage(ICommandSender sender) {
 		return mirrored.getCommandUsage(sender);
 	}
 
@@ -102,6 +102,6 @@ public class CommandOverride extends CommandBase {
 	@Override
 	public int compareTo(ICommand o) {
 		return o instanceof CommandOverride ? node.compareTo(((CommandOverride) o).node)
-				: getName().compareTo(o.getCommandName());
+				: getCommandName().compareTo(o.getCommandName());
 	}
 }
