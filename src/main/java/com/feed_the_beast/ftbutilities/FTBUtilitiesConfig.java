@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbutilities;
 
+import com.feed_the_beast.ftblib.Config;
 import com.feed_the_beast.ftblib.lib.config.EnumTristate;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.item.ItemStackSerializer;
@@ -7,17 +8,15 @@ import com.feed_the_beast.ftblib.lib.math.Ticks;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.feed_the_beast.ftblib.lib.util.ServerUtils;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
+
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
+//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 @Config(modid = FTBUtilities.MOD_ID, category = "")
 public class FTBUtilitiesConfig {
 	@Config.RequiresWorldRestart
@@ -180,7 +179,7 @@ public class FTBUtilitiesConfig {
 						try {
 							ItemStack stack = ItemStackSerializer.parseItem(s);
 
-							if (!stack.isEmpty()) {
+							if (stack != null) {
 								startingItems.add(stack);
 							}
 						} catch (Exception ex) {
@@ -342,9 +341,9 @@ public class FTBUtilitiesConfig {
 
 				for (String s : disabled_right_click_items) {
 					String[] s1 = s.split("@", 2);
-					Item item = Item.getByNameOrId(s1[0]);
+					Item item = GameData.getItemRegistry().getObject(s1[0]);
 
-					if (item != null && item != Items.AIR) {
+					if (item != null) {
 						DisabledItem di = new DisabledItem();
 						di.item = item;
 						di.metadata = (s1.length == 1 || s1[1].startsWith("*")) ? OreDictionary.WILDCARD_VALUE
@@ -359,7 +358,7 @@ public class FTBUtilitiesConfig {
 			}
 
 			Item item = stack.getItem();
-			int meta = stack.getMetadata();
+			int meta = stack.getItemDamage();
 
 			for (DisabledItem disabledItem : disabledItems) {
 				if (disabledItem.item == item
@@ -378,7 +377,7 @@ public class FTBUtilitiesConfig {
 	}
 
 	public static void sync() {
-		ConfigManager.sync(FTBUtilities.MOD_ID, Config.Type.INSTANCE);
+//		ConfigManager.sync(FTBUtilities.MOD_ID, Config.Type.INSTANCE);
 		login.motdComponents = null;
 		login.startingItems = null;
 		afk.notificationTimer = -1L;
@@ -387,7 +386,7 @@ public class FTBUtilitiesConfig {
 
 	@SubscribeEvent
 	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-		if (event.getModID().equals(FTBUtilities.MOD_ID)) {
+		if (event.modID.equals(FTBUtilities.MOD_ID)) {
 			sync();
 		}
 	}

@@ -76,15 +76,15 @@ public class FTBUtilitiesClientEventHandler {
 			long timeLeft = Math.max(0L, shutdownTime - System.currentTimeMillis());
 
 			if (timeLeft > 0L && timeLeft <= FTBUtilitiesClientConfig.general.getShowShutdownTimer()) {
-				event.getLeft().add(EnumChatFormatting.DARK_RED
+				event.left.add(EnumChatFormatting.DARK_RED
 						+ I18n.format("ftbutilities.lang.timer.shutdown", StringUtils.getTimeString(timeLeft)));
 			}
 		}
 
 		if (FTBUtilitiesConfig.world.show_playtime) {
-			event.getLeft()
-					.add(StatList.PLAY_ONE_MINUTE.getStatName().getUnformattedText() + ": " + Ticks
-							.get(Minecraft.getMinecraft().player.getStatFileWriter().readStat(StatList.PLAY_ONE_MINUTE))
+			event.left
+					.add(StatList.minutesPlayedStat.func_150951_e().getUnformattedText() + ": " + Ticks
+							.get(Minecraft.getMinecraft().thePlayer.getStatFileWriter().writeStat(StatList.minutesPlayedStat))
 							.toTimeString());
 		}
 	}
@@ -102,14 +102,14 @@ public class FTBUtilitiesClientEventHandler {
 
 	@SubscribeEvent
 	public static void onCustomClick(CustomClickEvent event) {
-		if (event.getID().getNamespace().equals(FTBUtilities.MOD_ID)) {
-			switch (event.getID().getPath()) {
+		if (event.getID().getResourceDomain().equals(FTBUtilities.MOD_ID)) {
+			switch (event.getID().getResourcePath()) {
 				case "toggle_gamemode":
 					ClientUtils.execClientCommand("/gamemode "
-							+ (Minecraft.getMinecraft().player.capabilities.isCreativeMode ? "survival" : "creative"));
+							+ (Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode ? "survival" : "creative"));
 					break;
 				case "daytime":
-					long addDay = (24000L - (Minecraft.getMinecraft().world.getWorldTime() % 24000L)
+					long addDay = (24000L - (Minecraft.getMinecraft().theWorld.getWorldTime() % 24000L)
 							+ FTBUtilitiesClientConfig.general.button_daytime) % 24000L;
 
 					if (addDay != 0L) {
@@ -118,7 +118,7 @@ public class FTBUtilitiesClientEventHandler {
 
 					break;
 				case "nighttime":
-					long addNight = (24000L - (Minecraft.getMinecraft().world.getWorldTime() % 24000L)
+					long addNight = (24000L - (Minecraft.getMinecraft().theWorld.getWorldTime() % 24000L)
 							+ FTBUtilitiesClientConfig.general.button_nighttime) % 24000L;
 
 					if (addNight != 0L) {
@@ -143,15 +143,15 @@ public class FTBUtilitiesClientEventHandler {
 	public static void onClientWorldTick(TickEvent.ClientTickEvent event) {
 		Minecraft mc = Minecraft.getMinecraft();
 
-		if (event.phase == TickEvent.Phase.START && mc.world != null
-				&& mc.world.provider.getDimension() == FTBUtilitiesConfig.world.spawn_dimension) {
+		if (event.phase == TickEvent.Phase.START && mc.theWorld != null
+				&& mc.theWorld.provider.dimensionId == FTBUtilitiesConfig.world.spawn_dimension) {
 			if (FTBUtilitiesConfig.world.forced_spawn_dimension_time != -1) {
-				mc.world.setWorldTime(FTBUtilitiesConfig.world.forced_spawn_dimension_time);
+				mc.theWorld.setWorldTime(FTBUtilitiesConfig.world.forced_spawn_dimension_time);
 			}
 
 			if (FTBUtilitiesConfig.world.forced_spawn_dimension_weather != -1) {
-				mc.world.getWorldInfo().setRaining(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 1);
-				mc.world.getWorldInfo().setThundering(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 2);
+				mc.theWorld.getWorldInfo().setRaining(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 1);
+				mc.theWorld.getWorldInfo().setThundering(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 2);
 			}
 		}
 	}
