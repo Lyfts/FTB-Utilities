@@ -1,19 +1,16 @@
 package com.feed_the_beast.ftbutilities.client;
 
-import java.util.Map;
-
-import org.lwjgl.input.Keyboard;
-
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesCommon;
 import com.feed_the_beast.ftbutilities.command.client.CommandKaomoji;
 import com.feed_the_beast.ftbutilities.command.client.CommandPing;
+import org.lwjgl.input.Keyboard;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.ClientCommandHandler;
+
+import java.util.Map;
 
 public class FTBUtilitiesClient extends FTBUtilitiesCommon // FTBLibClient
 {
@@ -41,7 +38,7 @@ public class FTBUtilitiesClient extends FTBUtilitiesCommon // FTBLibClient
 
 		ClientCommandHandler.instance.registerCommand(new CommandPing());
 
-		Minecraft.getMinecraft().getRenderManager().getSkinMap().get("default").addLayer(LayerBadge.INSTANCE);
-		Minecraft.getMinecraft().getRenderManager().getSkinMap().get("slim").addLayer(LayerBadge.INSTANCE);
+//		Minecraft.getMinecraft().getRenderManager().getSkinMap().get("default").addLayer(LayerBadge.INSTANCE);
+//		Minecraft.getMinecraft().getRenderManager().getSkinMap().get("slim").addLayer(LayerBadge.INSTANCE);
 	}
 }
