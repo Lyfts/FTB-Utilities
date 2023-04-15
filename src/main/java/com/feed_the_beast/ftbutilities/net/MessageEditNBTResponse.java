@@ -13,105 +13,88 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 
-public class MessageEditNBTResponse extends MessageToServer
-{
+
+public class MessageEditNBTResponse extends MessageToServer {
 	private NBTTagCompound info, mainNbt;
 
-	public MessageEditNBTResponse()
-	{
+	public MessageEditNBTResponse() {
 	}
 
-	public MessageEditNBTResponse(NBTTagCompound i, NBTTagCompound nbt)
-	{
+	public MessageEditNBTResponse(NBTTagCompound i, NBTTagCompound nbt) {
 		info = i;
 		mainNbt = nbt;
 	}
 
 	@Override
-	public NetworkWrapper getWrapper()
-	{
+	public NetworkWrapper getWrapper() {
 		return FTBUtilitiesNetHandler.FILES;
 	}
 
 	@Override
-	public void writeData(DataOut data)
-	{
+	public void writeData(DataOut data) {
 		data.writeNBT(info);
 		data.writeNBT(mainNbt);
 	}
 
 	@Override
-	public void readData(DataIn data)
-	{
+	public void readData(DataIn data) {
 		info = data.readNBT();
 		mainNbt = data.readNBT();
 	}
 
 	@Override
-	public void onMessage(EntityPlayerMP player)
-	{
-		if (CmdEditNBT.EDITING.get(player.getGameProfile().getId()).equals(info))
-		{
+	public void onMessage(EntityPlayerMP player) {
+		if (CmdEditNBT.EDITING.get(player.getGameProfile().getId()).equals(info)) {
 			CmdEditNBT.EDITING.remove(player.getGameProfile().getId());
 
-			switch (info.getString("type"))
-			{
-				case "player":
-				{
-					ForgePlayer player1 = Universe.get().getPlayer(info.getUniqueId("id"));
+			switch (info.getString("type")) {
+				case "player": {
+					ForgePlayer player1 = Universe.get().getPlayer(info.getString("id"));
 
-					if (player1 != null)
-					{
+					if (player1 != null) {
 						player1.setPlayerNBT(mainNbt);
 					}
 
 					break;
 				}
-				case "block":
-				{
-					BlockPos pos = new BlockPos(info.getInteger("x"), info.getInteger("y"), info.getInteger("z"));
+				case "block": {
+					int x = info.getInteger("x");
+					int y = info.getInteger("y");
+					int z = info.getInteger("z");
 
-					if (player.world.isBlockLoaded(pos))
-					{
-						TileEntity tile = player.world.getTileEntity(pos);
+					if (player.worldObj.getChunkProvider().chunkExists(x << 4, z << 4)) {
+						TileEntity tile = player.worldObj.getTileEntity(x, y, z);
 
-						if (tile != null)
-						{
-							mainNbt.setInteger("x", pos.getX());
-							mainNbt.setInteger("y", pos.getY());
-							mainNbt.setInteger("z", pos.getZ());
+						if (tile != null) {
+							mainNbt.setInteger("x", x);
+							mainNbt.setInteger("y", y);
+							mainNbt.setInteger("z", z);
 							mainNbt.setString("id", info.getString("id"));
 							tile.readFromNBT(mainNbt);
 							tile.markDirty();
-							BlockUtils.notifyBlockUpdate(tile.getWorld(), pos, null);
+							BlockUtils.notifyBlockUpdate(tile.getWorldObj(), x, y, z, null);
 						}
 					}
 
 					break;
 				}
-				case "entity":
-				{
-					Entity entity = player.world.getEntityByID(info.getInteger("id"));
+				case "entity": {
+					Entity entity = player.worldObj.getEntityByID(info.getInteger("id"));
 
-					if (entity != null)
-					{
-						entity.deserializeNBT(mainNbt);
+					if (entity != null) {
+						entity.readFromNBT(mainNbt);
 
-						if (entity.isEntityAlive())
-						{
-							player.world.updateEntityWithOptionalForce(entity, true);
+						if (entity.isEntityAlive()) {
+							player.worldObj.updateEntityWithOptionalForce(entity, true);
 						}
 					}
 
 					break;
 				}
-				case "item":
-				{
-					ItemStack stack = new ItemStack(mainNbt);
-					player.setHeldItem(EnumHand.MAIN_HAND, stack.isEmpty() ? ItemStack.EMPTY : stack);
+				case "item": {
+					ItemStack stack = ItemStack.loadItemStackFromNBT(mainNbt);
+					player.setCurrentItemOrArmor(0, stack);
 				}
 			}
 		}

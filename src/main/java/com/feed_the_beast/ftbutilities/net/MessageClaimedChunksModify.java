@@ -10,7 +10,7 @@ import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.ChunkCoordIntPair;
 
 import java.util.Collection;
 
@@ -23,13 +23,13 @@ public class MessageClaimedChunksModify extends MessageToServer
 
 	private int startX, startZ;
 	private int action;
-	private Collection<ChunkPos> chunks;
+	private Collection<ChunkCoordIntPair> chunks;
 
 	public MessageClaimedChunksModify()
 	{
 	}
 
-	public MessageClaimedChunksModify(int sx, int sz, int a, Collection<ChunkPos> c)
+	public MessageClaimedChunksModify(int sx, int sz, int a, Collection<ChunkCoordIntPair> c)
 	{
 		startX = sx;
 		startZ = sz;
@@ -73,11 +73,11 @@ public class MessageClaimedChunksModify extends MessageToServer
 
 		if (!p.hasTeam())
 		{
-			FTBLibNotifications.NO_TEAM.send(player.server, player);
+			FTBLibNotifications.NO_TEAM.send(player.mcServer, player);
 			return;
 		}
 
-		for (ChunkPos pos0 : chunks)
+		for (ChunkCoordIntPair pos0 : chunks)
 		{
 			ChunkDimPos pos = new ChunkDimPos(pos0, player.dimension);
 

@@ -1,16 +1,19 @@
 package com.feed_the_beast.ftbutilities.data;
 
-import com.feed_the_beast.ftblib.lib.math.BlockDimPos;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.INBTSerializable;
-
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import com.feed_the_beast.ftblib.lib.math.BlockDimPos;
+import com.feed_the_beast.ftblib.lib.util.INBTSerializable;
+import com.feed_the_beast.ftblib.lib.util.StringUtils;
+
+import net.minecraft.nbt.NBTTagCompound;
 
 /**
  * @author LatvianModder
@@ -82,7 +85,7 @@ public final class BlockDimPosStorage implements INBTSerializable<NBTTagCompound
 		map.clear();
 		names.clear();
 
-		for (String name : nbt.getKeySet())
+		for (String name : (Set<String>) nbt.func_150296_c())
 		{
 			BlockDimPos pos = BlockDimPos.fromIntArray(nbt.getIntArray(name));
 

@@ -2,7 +2,6 @@ package com.feed_the_beast.ftbutilities.client;
 
 import com.feed_the_beast.ftblib.lib.math.Ticks;
 import com.feed_the_beast.ftbutilities.FTBUtilities;
-import net.minecraftforge.common.config.Config;
 
 /**
  * @author LatvianModder

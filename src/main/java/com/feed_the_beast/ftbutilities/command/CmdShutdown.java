@@ -8,22 +8,18 @@ import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
 
-public class CmdShutdown extends CmdBase
-{
-	public CmdShutdown()
-	{
+public class CmdShutdown extends CmdBase {
+	public CmdShutdown() {
 		super("shutdown", Level.OP);
 	}
 
-	public static void shutdown(MinecraftServer server)
-	{
-		FileUtils.newFile(new File(server.getDataDirectory(), "autostart.stamp"));
+	public static void shutdown(MinecraftServer server) {
+		FileUtils.newFile(new File(server.getFolderName(), "autostart.stamp"));
 		server.initiateShutdown();
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		shutdown(server);
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		shutdown(getCommandSenderAsPlayer(sender).mcServer);
 	}
 }

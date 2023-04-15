@@ -1,97 +1,92 @@
 package com.feed_the_beast.ftbutilities.command;
 
+import java.util.HashSet;
+import java.util.Map;
+
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.util.NBTUtils;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 
-import java.util.HashSet;
-import java.util.Map;
-
 /**
  * @author LatvianModder
  */
-public class CmdDumpChunkloaders extends CmdBase
-{
-	public CmdDumpChunkloaders()
-	{
+public class CmdDumpChunkloaders extends CmdBase {
+	public CmdDumpChunkloaders() {
 		super("dump_chunkloaders", Level.OP_OR_SP);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		for (World world : DimensionManager.getWorlds())
-		{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		for (World world : DimensionManager.getWorlds()) {
 			HashSet<ForgeChunkManager.Ticket> set = new HashSet<>();
 
-			for (Map.Entry<ChunkPos, ForgeChunkManager.Ticket> entry : ForgeChunkManager.getPersistentChunksFor(world).entries())
-			{
+			for (Map.Entry<ChunkCoordIntPair, ForgeChunkManager.Ticket> entry : ForgeChunkManager.getPersistentChunksFor(world)
+					.entries()) {
 				set.add(entry.getValue());
 			}
 
-			if (!set.isEmpty())
-			{
-				sender.sendMessage(new TextComponentString("- DIM " + world.provider.getDimension() + ":"));
+			if (!set.isEmpty()) {
+				sender.addChatMessage(new ChatComponentText("- DIM " + world.provider.dimensionId + ":"));
 
-				for (ForgeChunkManager.Ticket ticket : set)
-				{
-					ITextComponent title = new TextComponentString(String.format("#%08x", ticket.hashCode()));
-					title.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(ticket.getChunkList().size() + " chunks")));
+				for (ForgeChunkManager.Ticket ticket : set) {
+					IChatComponent title = new ChatComponentText(String.format("#%08x", ticket.hashCode()));
+					title.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+							new ChatComponentText(ticket.getChunkList().size() + " chunks")));
 
-					ITextComponent owner = new TextComponentString("Owner");
-					owner.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(ticket.getModId() + " : " + ticket.getEntity())));
+					IChatComponent owner = new ChatComponentText("Owner");
+					owner.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+							new ChatComponentText(ticket.getModId() + " : " + ticket.getEntity())));
 
-					ITextComponent data = new TextComponentString("Data");
-					data.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(NBTUtils.getColoredNBTString(ticket.getModData()))));
+					IChatComponent data = new ChatComponentText("Data");
+					data.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+							new ChatComponentText(NBTUtils.getColoredNBTString(ticket.getModData()))));
 
-					ITextComponent chunks = new TextComponentString("Chunks");
+					IChatComponent chunks = new ChatComponentText("Chunks");
 
 					int minX = Integer.MAX_VALUE;
 					int minZ = Integer.MAX_VALUE;
 					int maxX = Integer.MIN_VALUE;
 					int maxZ = Integer.MIN_VALUE;
 
-					for (ChunkPos pos : ticket.getChunkList())
-					{
-						if (pos.x < minX)
-						{
-							minX = pos.x;
+					for (ChunkCoordIntPair pos : ticket.getChunkList()) {
+						if (pos.chunkXPos < minX) {
+							minX = pos.chunkXPos;
 						}
 
-						if (pos.z < minZ)
-						{
-							minZ = pos.z;
+						if (pos.chunkZPos < minZ) {
+							minZ = pos.chunkZPos;
 						}
 
-						if (pos.x > maxX)
-						{
-							maxX = pos.x;
+						if (pos.chunkXPos > maxX) {
+							maxX = pos.chunkXPos;
 						}
 
-						if (pos.z > maxZ)
-						{
-							maxZ = pos.z;
+						if (pos.chunkZPos > maxZ) {
+							maxZ = pos.chunkZPos;
 						}
 					}
+					int x = (minX + maxX) * 8 + 8;
+					int z = (minZ + maxZ) * 8 + 8;
+					world.getChunkFromBlockCoords(x, z);
+					int y = world.getTopSolidOrLiquidBlock(x, z);
+					chunks.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+							new ChatComponentText("("+x+','+y+','+z+")" + " ; " + ticket.getChunkList().toString())));
+					chunks.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+							"/tp " + x + " " + y + " " + z));
 
-					BlockPos pos = new BlockPos((minX + maxX) * 8 + 8, 255, (minZ + maxZ) * 8 + 8);
-					world.getChunk(pos);
-					pos = world.getTopSolidOrLiquidBlock(pos);
-					chunks.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(pos + " ; " + ticket.getChunkList().toString())));
-					chunks.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + pos.getX() + " " + pos.getY() + " " + pos.getZ()));
-
-					sender.sendMessage(new TextComponentString("").appendSibling(title).appendText(" | ").appendSibling(owner).appendText(" | ").appendSibling(data).appendText(" | ").appendSibling(chunks));
+					sender.addChatMessage(
+							new ChatComponentText("").appendSibling(title).appendText(" | ").appendSibling(owner)
+									.appendText(" | ").appendSibling(data).appendText(" | ").appendSibling(chunks));
 				}
 			}
 		}

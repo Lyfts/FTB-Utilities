@@ -1,19 +1,18 @@
 package com.feed_the_beast.ftbutilities.client;
 
+import java.util.UUID;
+
+import org.lwjgl.opengl.GL11;
+
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
+import com.feed_the_beast.ftblib.lib.client.GlStateManager;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesItems;
 import com.feed_the_beast.ftbutilities.handlers.FTBUtilitiesClientEventHandler;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.entity.player.EnumPlayerModelParts;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11;
 
-import java.util.UUID;
+import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 
 public enum LayerBadge implements LayerRenderer<AbstractClientPlayer>
 {

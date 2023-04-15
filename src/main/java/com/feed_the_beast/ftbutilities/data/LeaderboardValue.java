@@ -1,15 +1,14 @@
 package com.feed_the_beast.ftbutilities.data;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.EnumChatFormatting;
 
 /**
  * @author LatvianModder
  */
-public class LeaderboardValue
-{
+public class LeaderboardValue {
 	public String username;
 	public int rank;
-	public ITextComponent value;
-	public TextFormatting color;
+	public IChatComponent value;
+	public EnumChatFormatting color;
 }

@@ -1,19 +1,15 @@
 package com.feed_the_beast.ftbutilities.ranks;
 
-import com.feed_the_beast.ftblib.lib.config.ConfigNull;
-import com.feed_the_beast.ftblib.lib.config.ConfigValue;
-import com.feed_the_beast.ftblib.lib.config.DefaultRankConfigHandler;
-import com.feed_the_beast.ftblib.lib.config.IRankConfigHandler;
-import com.feed_the_beast.ftblib.lib.config.RankConfigValueInfo;
+import com.feed_the_beast.ftblib.lib.config.*;
+import com.feed_the_beast.ftblib.lib.util.permission.DefaultPermissionHandler;
+import com.feed_the_beast.ftblib.lib.util.permission.DefaultPermissionLevel;
+import com.feed_the_beast.ftblib.lib.util.permission.IPermissionHandler;
+import com.feed_the_beast.ftblib.lib.util.permission.context.IContext;
 import com.mojang.authlib.GameProfile;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.server.permission.DefaultPermissionHandler;
-import net.minecraftforge.server.permission.DefaultPermissionLevel;
-import net.minecraftforge.server.permission.IPermissionHandler;
-import net.minecraftforge.server.permission.context.IContext;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -59,7 +55,7 @@ public enum FTBUtilitiesPermissionHandler implements IPermissionHandler, IRankCo
 				return false;
 			}
 
-			profile = new GameProfile(EntityPlayer.getOfflineUUID(profile.getName()), profile.getName());
+			profile = new GameProfile(EntityPlayer.func_146094_a(profile), profile.getName());
 		}
 
 		switch (Ranks.INSTANCE.getPermissionResult(profile, node, true))

@@ -1,46 +1,40 @@
 package com.feed_the_beast.ftbutilities.command;
 
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
-import com.feed_the_beast.ftblib.lib.math.MathUtils;
-import net.minecraft.block.state.IBlockState;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.RayTraceResult;
-
-import java.util.List;
+import net.minecraft.util.ChatComponentText;
 
 /**
  * @author LatvianModder
  */
-public class CmdCycleBlockState extends CmdBase
-{
-	public CmdCycleBlockState()
-	{
+public class CmdCycleBlockState extends CmdBase {
+	public CmdCycleBlockState() {
 		super("cycle_block_state", Level.OP);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		EntityPlayerMP player = getCommandSenderAsPlayer(sender);
-		RayTraceResult result = MathUtils.rayTrace(player, false);
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		// EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+		// MovingObjectPosition result = MathUtils.rayTrace(player, false);
 
-		if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK)
-		{
-			IBlockState state = player.world.getBlockState(result.getBlockPos());
-			List<IBlockState> states = state.getBlock().getBlockState().getValidStates();
-			player.world.setBlockState(result.getBlockPos(), states.get((states.indexOf(state) + 1) % states.size()), 3);
+		// if (result != null && result.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
 
-			TileEntity tileEntity = player.world.getTileEntity(result.getBlockPos());
+		// 	Block block = sender.getEntityWorld().getBlock(result.blockX, result.blockY, result.blockZ);
+		// 	int meta = player.worldObj.getBlockMetadata(result.blockX, result.blockY, result.blockZ);
 
-			if (tileEntity != null)
-			{
-				tileEntity.updateContainingBlockInfo();
-				tileEntity.markDirty();
-			}
-		}
+		// 	List<IBlockState> states = state.getBlock().getBlockState().getValidStates();
+		// 	player.world.setBlockState(result.getBlockPos(), states.get((states.indexOf(state) + 1) % states.size()),
+		// 			3);
+
+		// 	TileEntity tileEntity = player.world.getTileEntity(result.getBlockPos());
+
+		// 	if (tileEntity != null) {
+		// 		tileEntity.updateContainingBlockInfo();
+		// 		tileEntity.markDirty();
+		// 	}
+		// }
+		sender.addChatMessage(new ChatComponentText("Command not implemented."));
 	}
 }

@@ -1,5 +1,8 @@
 package com.feed_the_beast.ftbutilities.command.chunks;
 
+import java.util.List;
+import java.util.OptionalInt;
+
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
@@ -9,60 +12,46 @@ import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.OptionalInt;
 
 /**
  * @author LatvianModder
  */
-public class CmdUnclaimAll extends CmdBase
-{
-	public CmdUnclaimAll()
-	{
+public class CmdUnclaimAll extends CmdBase {
+	public CmdUnclaimAll() {
 		super("unclaim_all", Level.ALL);
 	}
 
 	@Override
-	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
-	{
-		if (args.length == 1)
-		{
-			return getListOfStringsMatchingLastWord(args, CommandUtils.getDimensionNames());
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+		if (args.length == 1) {
+			return getListOfStringsFromIterableMatchingLastWord(args, CommandUtils.getDimensionNames());
 		}
 
-		return super.getTabCompletions(server, sender, args, pos);
+		return super.addTabCompletionOptions(sender, args);
 	}
 
 	@Override
-	public boolean isUsernameIndex(String[] args, int index)
-	{
+	public boolean isUsernameIndex(String[] args, int index) {
 		return index == 1;
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		if (!ClaimedChunks.isActive())
-		{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (!ClaimedChunks.isActive()) {
 			throw FTBLib.error(sender, "feature_disabled_server");
 		}
 
 		ForgePlayer p = CommandUtils.getSelfOrOther(sender, args, 1, FTBUtilitiesPermissions.CLAIMS_OTHER_UNCLAIM);
 
-		if (p.hasTeam())
-		{
+		if (p.hasTeam()) {
 			OptionalInt dimension = CommandUtils.parseDimension(sender, args, 0);
 			ClaimedChunks.instance.unclaimAllChunks(p, p.team, dimension);
-			Notification.of(FTBUtilitiesNotifications.UNCLAIMED_ALL, FTBUtilities.lang(sender, "ftbutilities.lang.chunks.unclaimed_all")).send(server, sender);
-		}
-		else
-		{
+			Notification.of(FTBUtilitiesNotifications.UNCLAIMED_ALL,
+					FTBUtilities.lang(sender, "ftbutilities.lang.chunks.unclaimed_all")).send(getCommandSenderAsPlayer(sender).mcServer, sender);
+		} else {
 			throw FTBLib.error(sender, "ftblib.lang.team.error.no_team");
 		}
 	}

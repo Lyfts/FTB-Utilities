@@ -1,124 +1,113 @@
 package com.feed_the_beast.ftbutilities.command.ranks;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.feed_the_beast.ftbutilities.ranks.Rank;
 import com.feed_the_beast.ftbutilities.ranks.Ranks;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
-
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 
 /**
  * @author LatvianModder
  */
-public class CmdInfo extends CmdBase
-{
-	public CmdInfo()
-	{
+public class CmdInfo extends CmdBase {
+	public CmdInfo() {
 		super("info", Level.ALL);
 	}
 
 	@Override
-	public boolean isUsernameIndex(String[] args, int index)
-	{
+	public boolean isUsernameIndex(String[] args, int index) {
 		return index == 0;
 	}
 
 	@Override
-	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
-	{
-		if (args.length == 1)
-		{
-			return Ranks.isActive() ? getListOfStringsMatchingLastWord(args, Ranks.INSTANCE.getRankNames(false)) : Collections.emptyList();
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+		if (args.length == 1) {
+			return Ranks.isActive()
+					? getListOfStringsFromIterableMatchingLastWord(args, Ranks.INSTANCE.getRankNames(false))
+					: Collections.emptyList();
 		}
 
-		return super.getTabCompletions(server, sender, args, pos);
+		return super.addTabCompletionOptions(sender, args);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		if (!Ranks.isActive())
-		{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (!Ranks.isActive()) {
 			throw FTBLib.error(sender, "feature_disabled_server");
 		}
 
 		checkArgs(sender, args, 1);
-		Rank rank = Ranks.INSTANCE.getRank(server, sender, args[0]);
+		Rank rank = Ranks.INSTANCE.getRank(sender, args[0]);
 
-		sender.sendMessage(new TextComponentString(""));
-		ITextComponent id = new TextComponentString("[" + rank.getId() + (rank.comment.isEmpty() ? "]" : ("] - " + rank.comment)));
-		id.getStyle().setColor(TextFormatting.YELLOW);
-		id.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, rank.getDisplayName()));
-		sender.sendMessage(id);
+		sender.addChatMessage(new ChatComponentText(""));
+		IChatComponent id = new ChatComponentText(
+				"[" + rank.getId() + (rank.comment.isEmpty() ? "]" : ("] - " + rank.comment)));
+		id.getChatStyle().setColor(EnumChatFormatting.YELLOW);
+		id.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, rank.getDisplayName()));
+		sender.addChatMessage(id);
 
 		Set<Rank> parents = rank.getParents();
 
-		if (!parents.isEmpty())
-		{
-			ITextComponent t = new TextComponentString("");
-			t.appendSibling(StringUtils.color(new TextComponentString(Rank.NODE_PARENT), TextFormatting.GOLD));
+		if (!parents.isEmpty()) {
+			IChatComponent t = new ChatComponentText("");
+			t.appendSibling(StringUtils.color(new ChatComponentText(Rank.NODE_PARENT), EnumChatFormatting.GOLD));
 			t.appendText(": ");
 
 			boolean first = true;
 
-			for (Rank r : parents)
-			{
-				if (first)
-				{
+			for (Rank r : parents) {
+				if (first) {
 					first = false;
-				}
-				else
-				{
+				} else {
 					t.appendText(", ");
 				}
 
-				ITextComponent t1 = new TextComponentString(r.getId());
-				t1.getStyle().setColor(TextFormatting.AQUA);
+				IChatComponent t1 = new ChatComponentText(r.getId());
+				t1.getChatStyle().setColor(EnumChatFormatting.AQUA);
 
-				if (!r.comment.isEmpty())
-				{
-					t1.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(r.comment)));
+				if (!r.comment.isEmpty()) {
+					t1.getChatStyle().setChatHoverEvent(
+							new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(r.comment)));
 				}
 
-				t1.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ranks info " + r.getId()));
+				t1.getChatStyle()
+						.setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ranks info " + r.getId()));
 				t.appendSibling(t1);
 			}
 
-			sender.sendMessage(t);
+			sender.addChatMessage(t);
 		}
 
-		for (Rank.Entry entry : rank.permissions.values())
-		{
-			if (entry.node.equals(Rank.NODE_PARENT))
-			{
+		for (Rank.Entry entry : rank.permissions.values()) {
+			if (entry.node.equals(Rank.NODE_PARENT)) {
 				continue;
 			}
 
-			ITextComponent t = new TextComponentString("");
-			t.appendSibling(StringUtils.color(new TextComponentString(entry.node), TextFormatting.GOLD));
+			IChatComponent t = new ChatComponentText("");
+			t.appendSibling(StringUtils.color(new ChatComponentText(entry.node), EnumChatFormatting.GOLD));
 			t.appendText(": ");
-			t.appendSibling(StringUtils.color(new TextComponentString(entry.value), TextFormatting.BLUE));
+			t.appendSibling(StringUtils.color(new ChatComponentText(entry.value), EnumChatFormatting.BLUE));
 
-			if (!entry.comment.isEmpty())
-			{
-				t.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(entry.comment)));
+			if (!entry.comment.isEmpty()) {
+				t.getChatStyle().setChatHoverEvent(
+						new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(entry.comment)));
 			}
 
-			t.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/ranks set_permission " + rank.getId() + " " + entry.node + " " + entry.value));
-			sender.sendMessage(t);
+			t.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
+					"/ranks set_permission " + rank.getId() + " " + entry.node + " " + entry.value));
+			sender.addChatMessage(t);
 		}
 	}
 }

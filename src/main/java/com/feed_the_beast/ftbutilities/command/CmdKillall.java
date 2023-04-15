@@ -13,7 +13,6 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -26,16 +25,12 @@ import java.util.function.Predicate;
 /**
  * @author LatvianModder
  */
-public class CmdKillall extends CmdBase
-{
+public class CmdKillall extends CmdBase {
 	private static final Predicate<Entity> ALL = entity -> true;
 	private static final Predicate<Entity> DEFAULT = entity -> {
-		if (entity instanceof EntityPlayer)
-		{
+		if (entity instanceof EntityPlayer) {
 			return false;
-		}
-		else if (entity instanceof EntityItem || entity instanceof EntityXPOrb)
-		{
+		} else if (entity instanceof EntityItem || entity instanceof EntityXPOrb) {
 			return true;
 		}
 
@@ -50,38 +45,31 @@ public class CmdKillall extends CmdBase
 	private static final Predicate<Entity> PLAYER = entity -> entity instanceof EntityPlayer;
 	private static final Predicate<Entity> NON_LIVING = entity -> !(entity instanceof EntityLivingBase);
 	private static final Predicate<Entity> NON_PLAYER = entity -> !(entity instanceof EntityPlayer);
-	private static final List<String> TAB = Arrays.asList("default", "all", "items", "xp", "monsters", "animals", "living", "players", "non_living", "non_players");
+	private static final List<String> TAB = Arrays.asList("default", "all", "items", "xp", "monsters", "animals",
+			"living", "players", "non_living", "non_players");
 
-	public CmdKillall()
-	{
+	public CmdKillall() {
 		super("killall", Level.OP);
 	}
 
 	@Override
-	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
-	{
-		if (args.length == 1)
-		{
-			return getListOfStringsMatchingLastWord(args, TAB);
-		}
-		else if (args.length == 2)
-		{
-			return getListOfStringsMatchingLastWord(args, CommandUtils.getDimensionNames());
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+		if (args.length == 1) {
+			return getListOfStringsFromIterableMatchingLastWord(args, TAB);
+		} else if (args.length == 2) {
+			return getListOfStringsFromIterableMatchingLastWord(args, CommandUtils.getDimensionNames());
 		}
 
-		return super.getTabCompletions(server, sender, args, pos);
+		return super.addTabCompletionOptions(sender, args);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		Predicate<Entity> predicate = DEFAULT;
 		String type = "default";
 
-		if (args.length >= 1)
-		{
-			switch (args[0])
-			{
+		if (args.length >= 1) {
+			switch (args[0]) {
 				case "all":
 					predicate = ALL;
 					type = "all";
@@ -133,18 +121,15 @@ public class CmdKillall extends CmdBase
 
 		int killed = 0;
 
-		for (World world : server.worlds)
-		{
-			for (Entity entity : new ArrayList<>(world.loadedEntityList))
-			{
-				if (predicate.test(entity) && (!dimension.isPresent() || dimension.getAsInt() == entity.dimension))
-				{
-					entity.onKillCommand();
+		for (World world : getCommandSenderAsPlayer(sender).mcServer.worldServers) {
+			for (Entity entity : new ArrayList<Entity>(world.loadedEntityList)) {
+				if (predicate.test(entity) && (!dimension.isPresent() || dimension.getAsInt() == entity.dimension)) {
+					entity.setDead();
 					killed++;
 				}
 			}
 		}
 
-		sender.sendMessage(FTBUtilities.lang(sender, "ftbutilities.lang.killed_entities", killed, type));
+		sender.addChatMessage(FTBUtilities.lang(sender, "ftbutilities.lang.killed_entities", killed, type));
 	}
 }

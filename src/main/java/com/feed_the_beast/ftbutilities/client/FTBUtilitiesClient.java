@@ -1,18 +1,19 @@
 package com.feed_the_beast.ftbutilities.client;
 
+import java.util.Map;
+
+import org.lwjgl.input.Keyboard;
+
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesCommon;
 import com.feed_the_beast.ftbutilities.command.client.CommandKaomoji;
 import com.feed_the_beast.ftbutilities.command.client.CommandPing;
+
+import cpw.mods.fml.client.registry.ClientRegistry;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.client.settings.KeyModifier;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import org.lwjgl.input.Keyboard;
-
-import java.util.Map;
 
 public class FTBUtilitiesClient extends FTBUtilitiesCommon // FTBLibClient
 {
@@ -24,8 +25,8 @@ public class FTBUtilitiesClient extends FTBUtilitiesCommon // FTBLibClient
 		super.preInit();
 
 		FTBUtilitiesClientConfig.sync();
-		ClientRegistry.registerKeyBinding(KEY_NBT = new KeyBinding("key.ftbutilities.nbt", KeyConflictContext.IN_GAME, KeyModifier.ALT, Keyboard.KEY_N, FTBLib.KEY_CATEGORY));
-		ClientRegistry.registerKeyBinding(KEY_TRASH = new KeyBinding("key.ftbutilities.trash", KeyConflictContext.IN_GAME, KeyModifier.NONE, Keyboard.KEY_DELETE, FTBLib.KEY_CATEGORY));
+		ClientRegistry.registerKeyBinding(KEY_NBT = new KeyBinding("key.ftbutilities.nbt", Keyboard.KEY_N, FTBLib.KEY_CATEGORY));
+		ClientRegistry.registerKeyBinding(KEY_TRASH = new KeyBinding("key.ftbutilities.trash", Keyboard.KEY_DELETE, FTBLib.KEY_CATEGORY));
 	}
 
 	@Override

@@ -10,26 +10,22 @@ import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
 
 /**
  * @author LatvianModder
  */
-public class CmdUnload extends CmdBase
-{
-	public CmdUnload()
-	{
+public class CmdUnload extends CmdBase {
+	public CmdUnload() {
 		super("unload", Level.ALL);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		if (!ClaimedChunks.isActive())
-		{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (!ClaimedChunks.isActive()) {
 			throw FTBLib.error(sender, "feature_disabled_server");
 		}
 
@@ -38,14 +34,13 @@ public class CmdUnload extends CmdBase
 		ForgePlayer p = CommandUtils.getForgePlayer(player);
 		ChunkDimPos pos = new ChunkDimPos(player);
 
-		if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNLOAD) && ClaimedChunks.instance.unloadChunk(p, pos))
-		{
-			Notification.of(FTBUtilitiesNotifications.CHUNK_MODIFIED, FTBUtilities.lang(player, "ftbutilities.lang.chunks.chunk_unloaded")).send(server, player);
+		if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNLOAD)
+				&& ClaimedChunks.instance.unloadChunk(p, pos)) {
+			Notification.of(FTBUtilitiesNotifications.CHUNK_MODIFIED,
+					FTBUtilities.lang(player, "ftbutilities.lang.chunks.chunk_unloaded")).send(player.mcServer, player);
 			FTBUtilitiesNotifications.updateChunkMessage(player, pos);
-		}
-		else
-		{
-			FTBUtilitiesNotifications.sendCantModifyChunk(server, player);
+		} else {
+			FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
 		}
 	}
 }

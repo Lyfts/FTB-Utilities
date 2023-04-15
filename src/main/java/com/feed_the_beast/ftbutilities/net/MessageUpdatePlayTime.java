@@ -4,10 +4,11 @@ import com.feed_the_beast.ftblib.lib.io.DataIn;
 import com.feed_the_beast.ftblib.lib.io.DataOut;
 import com.feed_the_beast.ftblib.lib.net.MessageToClient;
 import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.stats.StatList;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class MessageUpdatePlayTime extends MessageToClient
 {
@@ -44,6 +45,6 @@ public class MessageUpdatePlayTime extends MessageToClient
 	@SideOnly(Side.CLIENT)
 	public void onMessage()
 	{
-		Minecraft.getMinecraft().player.getStatFileWriter().unlockAchievement(Minecraft.getMinecraft().player, StatList.PLAY_ONE_MINUTE, time);
+		Minecraft.getMinecraft().thePlayer.getStatFileWriter().func_150871_b(Minecraft.getMinecraft().thePlayer, StatList.minutesPlayedStat, time);
 	}
 }

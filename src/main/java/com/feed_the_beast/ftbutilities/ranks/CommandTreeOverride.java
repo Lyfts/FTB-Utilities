@@ -14,49 +14,39 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class CommandTreeOverride extends CmdTreeBase
-{
+public class CommandTreeOverride extends CmdTreeBase {
 	public final CommandTreeBase mirrored;
 
-	public CommandTreeOverride(CommandTreeBase c, String parent, @Nullable ModContainer container)
-	{
+	public CommandTreeOverride(CommandTreeBase c, String parent, @Nullable ModContainer container) {
 		super(c.getName());
 		mirrored = c;
 		String node = parent + '.' + mirrored.getName();
 
-		for (ICommand command : mirrored.getSubCommands())
-		{
+		for (ICommand command : mirrored.getSubCommands()) {
 			addSubcommand(CommandOverride.create(command, node, container));
 		}
 	}
 
 	@Override
-	public String getUsage(ICommandSender sender)
-	{
+	public String getUsage(ICommandSender sender) {
 		return mirrored.getUsage(sender);
 	}
 
 	@Override
-	public List<String> getAliases()
-	{
+	public List<String> getCommandAliases() {
 		return mirrored.getAliases();
 	}
 
 	@Override
-	public boolean isUsernameIndex(String[] args, int index)
-	{
+	public boolean isUsernameIndex(String[] args, int index) {
 		return mirrored.isUsernameIndex(args, index);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		if (args.length < 1)
-		{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (args.length < 1) {
 			mirrored.execute(server, sender, args);
-		}
-		else
-		{
+		} else {
 			super.execute(server, sender, args);
 		}
 	}

@@ -10,25 +10,20 @@ import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.EnumChatFormatting;
 
 /**
  * @author LatvianModder
  */
-public class CmdInfo extends CmdBase
-{
-	public CmdInfo()
-	{
+public class CmdInfo extends CmdBase {
+	public CmdInfo() {
 		super("info", Level.ALL);
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		if (!ClaimedChunks.isActive())
-		{
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (!ClaimedChunks.isActive()) {
 			throw FTBLib.error(sender, "feature_disabled_server");
 		}
 
@@ -36,18 +31,16 @@ public class CmdInfo extends CmdBase
 		ChunkDimPos pos = new ChunkDimPos(player);
 		ClaimedChunk chunk = ClaimedChunks.instance.getChunk(pos);
 
-		ITextComponent owner;
+		IChatComponent owner;
 
-		if (chunk == null)
-		{
+		if (chunk == null) {
 			owner = FTBUtilities.lang(sender, "commands.chunks.info.not_claimed");
-		}
-		else
-		{
+		} else {
 			owner = chunk.getTeam().getCommandTitle();
 		}
 
-		owner.getStyle().setColor(TextFormatting.GOLD);
-		sender.sendMessage(FTBUtilities.lang(sender, "commands.chunks.info.text", pos.posX, pos.posZ, ServerUtils.getDimensionName(pos.dim), owner));
+		owner.getChatStyle().setColor(EnumChatFormatting.GOLD);
+		sender.addChatMessage(FTBUtilities.lang(sender, "commands.chunks.info.text", pos.posX, pos.posZ,
+				ServerUtils.getDimensionName(pos.dim), owner));
 	}
 }

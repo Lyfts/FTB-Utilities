@@ -11,7 +11,7 @@ import com.feed_the_beast.ftblib.lib.math.ChunkDimPos;
 import com.feed_the_beast.ftblib.lib.util.InvUtils;
 import com.feed_the_beast.ftblib.lib.util.ServerUtils;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
-import com.feed_the_beast.ftbutilities.FTBUtilities;
+import com.feed_the_beast.ftblib.lib.util.permission.PermissionAPI;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
@@ -19,77 +19,67 @@ import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesPlayerData;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesUniverseData;
 import com.feed_the_beast.ftbutilities.net.MessageUpdateTabName;
-import net.minecraft.block.state.IBlockState;
+
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameData;
+import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.server.permission.PermissionAPI;
+
+import java.util.List;
+
 
 /**
  * @author LatvianModder
  */
-@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
-public class FTBUtilitiesPlayerEventHandler
-{
+//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
+public class FTBUtilitiesPlayerEventHandler {
 	@SubscribeEvent
-	public static void registerPlayerData(ForgePlayerDataEvent event)
-	{
+	public static void registerPlayerData(ForgePlayerDataEvent event) {
 		event.register(new FTBUtilitiesPlayerData(event.getPlayer()));
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public static void onPlayerLoggedIn(ForgePlayerLoggedInEvent event)
-	{
+	public static void onPlayerLoggedIn(ForgePlayerLoggedInEvent event) {
 		EntityPlayerMP player = event.getPlayer().getPlayer();
 
-		if (ServerUtils.isFirstLogin(player, "ftbutilities_starting_items"))
-		{
-			if (FTBUtilitiesConfig.login.enable_starting_items)
-			{
-				for (ItemStack stack : FTBUtilitiesConfig.login.getStartingItems())
-				{
-					ItemHandlerHelper.giveItemToPlayer(player, stack.copy());
-				}
+		if (ServerUtils.isFirstLogin(player, "ftbutilities_starting_items")) {
+			if (FTBUtilitiesConfig.login.enable_starting_items) {
+				InvUtils.dropAllItems(player.getEntityWorld(), player.posX, player.posY, player.posZ, FTBUtilitiesConfig.login.getStartingItems());
 			}
 		}
 
-		if (FTBUtilitiesConfig.login.enable_motd)
-		{
-			for (ITextComponent t : FTBUtilitiesConfig.login.getMOTD())
-			{
-				player.sendMessage(t);
+		if (FTBUtilitiesConfig.login.enable_motd) {
+			for (IChatComponent t : FTBUtilitiesConfig.login.getMOTD()) {
+				player.addChatMessage(t);
 			}
 		}
 
-		if (ClaimedChunks.isActive())
-		{
+		if (ClaimedChunks.isActive()) {
 			ClaimedChunks.instance.markDirty();
 		}
 
-		if (FTBUtilitiesConfig.chat.replace_tab_names)
-		{
+		if (FTBUtilitiesConfig.chat.replace_tab_names) {
 			new MessageUpdateTabName(player).sendToAll();
 
-			for (EntityPlayerMP player1 : player.server.getPlayerList().getPlayers())
-			{
-				if (player1 != player)
-				{
+			for (EntityPlayerMP player1 : (List<EntityPlayerMP>) player.mcServer.getConfigurationManager().playerEntityList) {
+				if (player1 != player) {
 					new MessageUpdateTabName(player1).sendTo(player);
 				}
 			}
@@ -97,12 +87,10 @@ public class FTBUtilitiesPlayerEventHandler
 	}
 
 	@SubscribeEvent
-	public static void onPlayerLoggedOut(ForgePlayerLoggedOutEvent event)
-	{
+	public static void onPlayerLoggedOut(ForgePlayerLoggedOutEvent event) {
 		EntityPlayerMP player = event.getPlayer().getPlayer();
 
-		if (ClaimedChunks.isActive())
-		{
+		if (ClaimedChunks.isActive()) {
 			ClaimedChunks.instance.markDirty();
 		}
 
@@ -111,232 +99,211 @@ public class FTBUtilitiesPlayerEventHandler
 	}
 
 	@SubscribeEvent
-	public static void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event)
-	{
-		event.getEntity().getEntityData().removeTag(FTBUtilitiesPlayerData.TAG_LAST_CHUNK);
+	public static void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
+		event.entityPlayer.getEntityData().removeTag(FTBUtilitiesPlayerData.TAG_LAST_CHUNK);
 	}
 
 	@SubscribeEvent
-	public static void getPlayerSettings(ForgePlayerConfigEvent event)
-	{
+	public static void getPlayerSettings(ForgePlayerConfigEvent event) {
 		FTBUtilitiesPlayerData.get(event.getPlayer()).addConfig(event.getConfig());
 	}
 
 	@SubscribeEvent
-	public static void onDeath(LivingDeathEvent event)
-	{
-		if (event.getEntity() instanceof EntityPlayerMP)
-		{
-			FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(Universe.get().getPlayer(event.getEntity()));
-			data.setLastDeath(new BlockDimPos(event.getEntity()));
+	public static void onDeath(LivingDeathEvent event) {
+		EntityLivingBase entity = event.entityLiving;
+		if (entity instanceof EntityPlayerMP) {
+			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) entity;
+			FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(Universe.get().getPlayer(entityPlayerMP));
+			data.setLastDeath(new BlockDimPos(entity));
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onChunkChanged(EntityEvent.EnteringChunk event)
-	{
-		if (event.getEntity().world.isRemote || !(event.getEntity() instanceof EntityPlayerMP) || !Universe.loaded())
-		{
+	public static void onChunkChanged(EntityEvent.EnteringChunk event) {
+		if (event.entity.worldObj.isRemote || !(event.entity instanceof EntityPlayerMP) || !Universe.loaded()) {
 			return;
 		}
 
-		EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
-		player.markPlayerActive();
+		EntityPlayerMP player = (EntityPlayerMP) event.entity;
+		player.func_143004_u();
 		ForgePlayer p = Universe.get().getPlayer(player.getGameProfile());
 
-		if (p == null || p.isFake())
-		{
+		if (p == null || p.isFake()) {
 			return;
 		}
 
-		FTBUtilitiesPlayerData.get(p).setLastSafePos(new BlockDimPos(player));
-		FTBUtilitiesNotifications.updateChunkMessage(player, new ChunkDimPos(event.getNewChunkX(), event.getNewChunkZ(), player.dimension));
+		FTBUtilitiesPlayerData.get(p).setLastSafePos(new BlockDimPos((ICommandSender) player));
+		FTBUtilitiesNotifications.updateChunkMessage(player,
+				new ChunkDimPos(event.newChunkX, event.newChunkZ, player.dimension));
 	}
 
 	@SubscribeEvent
-	public static void onEntityDamage(LivingDamageEvent event)
-	{
-		if (FTBUtilitiesConfig.world.disable_player_suffocation_damage && event.getEntity() instanceof EntityPlayer && (event.getSource() == DamageSource.IN_WALL || event.getSource() == DamageSource.FLY_INTO_WALL))
-		{
-			event.setAmount(0F);
+	public static void onEntityDamage(LivingAttackEvent event) {
+		if (FTBUtilitiesConfig.world.disable_player_suffocation_damage && event.entity instanceof EntityPlayer
+				&& (event.source == DamageSource.inWall)) {
+//			event.ammount = 0;
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onEntityAttacked(AttackEntityEvent event)
-	{
-		if (!ClaimedChunks.canAttackEntity(event.getEntityPlayer(), event.getTarget()))
-		{
-			InvUtils.forceUpdate(event.getEntityPlayer());
+	public static void onEntityAttacked(AttackEntityEvent event) {
+		if (!ClaimedChunks.canAttackEntity(event.entityPlayer, event.target)) {
+			InvUtils.forceUpdate(event.entityPlayer);
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
-	{
-		if (FTBUtilitiesConfig.world.isItemRightClickDisabled(event.getItemStack()))
-		{
+	public static void onRightClickBlock(PlayerInteractEvent event) {
+		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+		if (FTBUtilitiesConfig.world.isItemRightClickDisabled(event.entityPlayer.getItemInUse())) {
 			event.setCanceled(true);
 
-			if (!event.getWorld().isRemote)
-			{
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Item disabled!"), true);
+			if (!event.world.isRemote) {
+				event.entityPlayer.addChatComponentMessage(new ChatComponentText("Item disabled!"));
 			}
 
 			return;
 		}
 
-		if (ClaimedChunks.blockBlockInteractions(event.getEntityPlayer(), event.getPos(), null))
-		{
-			InvUtils.forceUpdate(event.getEntityPlayer());
+		if (ClaimedChunks.blockBlockInteractions(event.entityPlayer, event.x, event.y, event.z, 0)) {
+			InvUtils.forceUpdate(event.entityPlayer);
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onRightClickItem(PlayerInteractEvent.RightClickItem event)
-	{
-		if (FTBUtilitiesConfig.world.isItemRightClickDisabled(event.getItemStack()))
-		{
+	public static void onRightClickItem(PlayerInteractEvent event) {
+		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR) {
+			return;
+		}
+		if (FTBUtilitiesConfig.world.isItemRightClickDisabled(event.entityPlayer.getItemInUse())) {
 			event.setCanceled(true);
 
-			if (!event.getWorld().isRemote)
-			{
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Item disabled!"), true);
+			if (!event.world.isRemote) {
+				event.entityPlayer.addChatComponentMessage(new ChatComponentText("Item disabled!"));
 			}
 
 			return;
 		}
 
-		if (ClaimedChunks.blockItemUse(event.getEntityPlayer(), event.getHand(), event.getPos()))
-		{
-			InvUtils.forceUpdate(event.getEntityPlayer());
+		if (ClaimedChunks.blockItemUse(event.entityPlayer, event.x, event.y, event.z)) {
+			InvUtils.forceUpdate(event.entityPlayer);
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onBlockBreak(BlockEvent.BreakEvent event)
-	{
-		if (ClaimedChunks.blockBlockEditing(event.getPlayer(), event.getPos(), event.getState()))
-		{
+	public static void onBlockBreak(BlockEvent.BreakEvent event) {
+		if (ClaimedChunks.blockBlockEditing(event.getPlayer(), event.x, event.y, event.z, 0)) {
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onBlockPlace(BlockEvent.PlaceEvent event)
-	{
-		if (ClaimedChunks.blockBlockEditing(event.getPlayer(), event.getPos(), event.getPlacedBlock()))
-		{
-			InvUtils.forceUpdate(event.getPlayer());
+	public static void onBlockPlace(BlockEvent.PlaceEvent event) {
+		if (ClaimedChunks.blockBlockEditing(event.player, event.x, event.y, event.z, 0)) {
+			InvUtils.forceUpdate(event.player);
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onBlockLeftClick(PlayerInteractEvent.LeftClickBlock event)
-	{
-		if (ClaimedChunks.blockBlockEditing(event.getEntityPlayer(), event.getPos(), null))
-		{
+	public static void onBlockLeftClick(PlayerInteractEvent event) {
+		if (event.action != PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
+			return;
+		}
+		if (ClaimedChunks.blockBlockEditing(event.entityPlayer, event.x, event.y, event.z, 0)) {
 			event.setCanceled(true);
 		}
 	}
 
-    /*
-	@SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onItemPickup(EntityItemPickupEvent event)
-    {
-    }
-    */
+	/*
+	 * @SubscribeEvent(priority = EventPriority.HIGH)
+	 * public static void onItemPickup(EntityItemPickupEvent event)
+	 * {
+	 * }
+	 */
 
 	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void onNameFormat(PlayerEvent.NameFormat event)
-	{
-		if (FTBUtilitiesConfig.commands.nick && Universe.loaded() && event.getEntityPlayer() instanceof EntityPlayerMP)
-		{
-			ForgePlayer p = Universe.get().getPlayer(event.getEntityPlayer().getGameProfile());
+	public static void onNameFormat(PlayerEvent.NameFormat event) {
+		if (FTBUtilitiesConfig.commands.nick && Universe.loaded()
+				&& event.entityPlayer instanceof EntityPlayerMP) {
+			ForgePlayer p = Universe.get().getPlayer(event.entityPlayer.getGameProfile());
 
-			if (p != null)
-			{
+			if (p != null) {
 				FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(p);
 
-				if (!data.getNickname().isEmpty() && PermissionAPI.hasPermission(event.getEntityPlayer(), FTBUtilitiesPermissions.CHAT_NICKNAME_SET))
-				{
+				if (!data.getNickname().isEmpty() && PermissionAPI.hasPermission(event.entityPlayer,
+						FTBUtilitiesPermissions.CHAT_NICKNAME_SET)) {
 					String name = StringUtils.addFormatting(data.getNickname());
 
-					if (!p.hasPermission(FTBUtilitiesPermissions.CHAT_NICKNAME_COLORS))
-					{
+					if (!p.hasPermission(FTBUtilitiesPermissions.CHAT_NICKNAME_COLORS)) {
 						name = StringUtils.unformatted(name);
-					}
-					else if (name.indexOf(StringUtils.FORMATTING_CHAR) != -1)
-					{
-						name += TextFormatting.RESET;
+					} else if (name.indexOf(StringUtils.FORMATTING_CHAR) != -1) {
+						name += EnumChatFormatting.RESET;
 					}
 
-					if (FTBUtilitiesConfig.chat.add_nickname_tilde)
-					{
+					if (FTBUtilitiesConfig.chat.add_nickname_tilde) {
 						name = "~" + name;
 					}
 
-					event.setDisplayname(name);
+					event.displayname = name;
 				}
 			}
 		}
 	}
 
-	private static String getStateName(IBlockState state)
-	{
-		if (state == state.getBlock().getDefaultState())
-		{
-			return state.getBlock().getRegistryName().toString();
-		}
-
-		return state.toString();
+	private static String getStateName(World world, int x, int y, int z) {
+		int meta = world.getBlockMetadata(x, y, z);
+		Block block = world.getBlock(x, y, z);
+		return block.getLocalizedName() + ":" + meta;
 	}
 
-	private static String getDim(EntityPlayer player)
-	{
+	private static String getDim(EntityPlayer player) {
 		return ServerUtils.getDimensionName(player.dimension).getUnformattedText();
 	}
 
-	private static String getPos(BlockPos pos)
-	{
-		return String.format("[%d, %d, %d]", pos.getX(), pos.getY(), pos.getZ());
+	private static String getPos(int x, int y, int z) {
+		return String.format("[%d, %d, %d]", x, y, z);
 	}
 
 	@SubscribeEvent
-	public static void onBlockBreakLog(BlockEvent.BreakEvent event)
-	{
+	public static void onBlockBreakLog(BlockEvent.BreakEvent event) {
 		EntityPlayer player = event.getPlayer();
 
-		if (FTBUtilitiesConfig.world.logging.block_broken && player instanceof EntityPlayerMP && FTBUtilitiesConfig.world.logging.log((EntityPlayerMP) player))
-		{
-			FTBUtilitiesUniverseData.worldLog(String.format("%s broke %s at %s in %s", player.getName(), getStateName(event.getState()), getPos(event.getPos()), getDim(player)));
+		if (FTBUtilitiesConfig.world.logging.block_broken && player instanceof EntityPlayerMP
+				&& FTBUtilitiesConfig.world.logging.log((EntityPlayerMP) player)) {
+			FTBUtilitiesUniverseData.worldLog(String.format("%s broke %s at %s in %s", player.getDisplayName(),
+					getStateName(event.world, event.x, event.y, event.z), getPos(event.x, event.y, event.z), getDim(player)));
 		}
 	}
 
 	@SubscribeEvent
-	public static void onBlockPlaceLog(BlockEvent.PlaceEvent event)
-	{
-		EntityPlayer player = event.getPlayer();
+	public static void onBlockPlaceLog(BlockEvent.PlaceEvent event) {
+		EntityPlayer player = event.player;
 
-		if (FTBUtilitiesConfig.world.logging.block_placed && player instanceof EntityPlayerMP && FTBUtilitiesConfig.world.logging.log((EntityPlayerMP) player))
-		{
-			FTBUtilitiesUniverseData.worldLog(String.format("%s placed %s at %s in %s", player.getName(), getStateName(event.getState()), getPos(event.getPos()), getDim(player)));
+		if (FTBUtilitiesConfig.world.logging.block_placed && player instanceof EntityPlayerMP
+				&& FTBUtilitiesConfig.world.logging.log((EntityPlayerMP) player)) {
+			FTBUtilitiesUniverseData.worldLog(String.format("%s placed %s at %s in %s", player.getDisplayName(),
+					getStateName(event.world, event.x, event.y, event.z), getPos(event.x, event.y, event.z), getDim(player)));
 		}
 	}
 
 	@SubscribeEvent
-	public static void onRightClickItemLog(PlayerInteractEvent.RightClickItem event)
-	{
-		EntityPlayer player = event.getEntityPlayer();
+	public static void onRightClickItemLog(PlayerInteractEvent event) {
+		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR) {
+			return;
+		}
+		EntityPlayer player = event.entityPlayer;
 
-		if (FTBUtilitiesConfig.world.logging.item_clicked_in_air && player instanceof EntityPlayerMP && FTBUtilitiesConfig.world.logging.log((EntityPlayerMP) player))
-		{
-			FTBUtilitiesUniverseData.worldLog(String.format("%s clicked %s in air at %s in %s", player.getName(), event.getItemStack().getItem().getRegistryName(), getPos(event.getPos()), getDim(player)));
+		if (FTBUtilitiesConfig.world.logging.item_clicked_in_air && player instanceof EntityPlayerMP
+				&& FTBUtilitiesConfig.world.logging.log((EntityPlayerMP) player)) {
+			FTBUtilitiesUniverseData.worldLog(String.format("%s clicked %s in air at %s in %s", player.getDisplayName(),
+					event.entityPlayer.getItemInUse().getItem().getItemStackDisplayName(event.entityPlayer.getItemInUse()), getPos(event.x, event.y, event.z), getDim(player)));
 		}
 	}
 }

@@ -6,44 +6,42 @@ import com.feed_the_beast.ftblib.lib.net.MessageToClient;
 import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 import com.feed_the_beast.ftblib.lib.util.NBTUtils;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.NetworkPlayerInfo;
+
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+
 
 import java.util.UUID;
 
-public class MessageUpdateTabName extends MessageToClient
-{
+public class MessageUpdateTabName extends MessageToClient {
 	private UUID playerId;
-	private ITextComponent displayName;
+	private IChatComponent displayName;
 	private boolean afk, rec;
 
-	public MessageUpdateTabName()
-	{
+	public MessageUpdateTabName() {
 	}
 
-	public MessageUpdateTabName(EntityPlayerMP player)
-	{
+	public MessageUpdateTabName(EntityPlayerMP player) {
 		playerId = player.getUniqueID();
-		displayName = player.getDisplayName();
-		afk = (System.currentTimeMillis() - player.getLastActiveTime()) >= FTBUtilitiesConfig.afk.getNotificationTimer();
+		displayName = new ChatComponentText(player.getDisplayName());
+		afk = (System.currentTimeMillis() - player.func_154331_x()) >= FTBUtilitiesConfig.afk
+				.getNotificationTimer();
 		rec = NBTUtils.getPersistedData(player, false).getBoolean("recording");
 	}
 
 	@Override
-	public NetworkWrapper getWrapper()
-	{
+	public NetworkWrapper getWrapper() {
 		return FTBUtilitiesNetHandler.GENERAL;
 	}
 
 	@Override
-	public void writeData(DataOut data)
-	{
+	public void writeData(DataOut data) {
 		data.writeUUID(playerId);
 		data.writeTextComponent(displayName);
 		data.writeBoolean(afk);
@@ -51,8 +49,7 @@ public class MessageUpdateTabName extends MessageToClient
 	}
 
 	@Override
-	public void readData(DataIn data)
-	{
+	public void readData(DataIn data) {
 		playerId = data.readUUID();
 		displayName = data.readTextComponent();
 		afk = data.readBoolean();
@@ -61,38 +58,34 @@ public class MessageUpdateTabName extends MessageToClient
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void onMessage()
-	{
-		NetworkPlayerInfo info = Minecraft.getMinecraft().player.connection.getPlayerInfo(playerId);
+	public void onMessage() {
+		return;
+//		NetworkPlayerInfo info = Minecraft.getMinecraft().thePlayer.connection.getPlayerInfo(playerId);
 
-		if (info == null)
-		{
-			return;
-		}
+//		if (info == null) {
+//			return;
+//		}
 
-		ITextComponent component = new TextComponentString("");
-
-		if (rec)
-		{
-			ITextComponent component1 = new TextComponentString("[REC]");
-			component1.getStyle().setColor(TextFormatting.RED);
-			component1.getStyle().setBold(true);
-			component.appendSibling(component1);
-		}
-
-		if (afk)
-		{
-			ITextComponent component1 = new TextComponentString("[AFK]");
-			component1.getStyle().setColor(TextFormatting.GRAY);
-			component.appendSibling(component1);
-		}
-
-		if (afk || rec)
-		{
-			component.appendText(" ");
-		}
-
-		component.appendSibling(displayName);
-		info.setDisplayName(component);
+//		IChatComponent component = new ChatComponentText("");
+//
+//		if (rec) {
+//			IChatComponent component1 = new ChatComponentText("[REC]");
+//			component1.getChatStyle().setColor(EnumChatFormatting.RED);
+//			component1.getChatStyle().setBold(true);
+//			component.appendSibling(component1);
+//		}
+//
+//		if (afk) {
+//			IChatComponent component1 = new ChatComponentText("[AFK]");
+//			component1.getChatStyle().setColor(EnumChatFormatting.GRAY);
+//			component.appendSibling(component1);
+//		}
+//
+//		if (afk || rec) {
+//			component.appendText(" ");
+//		}
+//
+//		component.appendSibling(displayName);
+//		info.setDisplayName(component);
 	}
 }

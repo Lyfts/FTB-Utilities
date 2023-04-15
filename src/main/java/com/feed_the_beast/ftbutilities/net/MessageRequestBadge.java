@@ -45,9 +45,7 @@ public class MessageRequestBadge extends MessageToServer
 	@Override
 	public void onMessage(EntityPlayerMP player)
 	{
-		HttpUtil.DOWNLOADER_EXECUTOR.submit(() -> {
-			String badge = FTBUtilitiesUniverseData.getBadge(Universe.get(), playerId);
-			player.server.addScheduledTask(() -> new MessageSendBadge(playerId, badge).sendTo(player));
-		});
+		String badge = FTBUtilitiesUniverseData.getBadge(Universe.get(), playerId);
+		new MessageSendBadge(playerId, badge).sendTo(player);
 	}
 }

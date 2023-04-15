@@ -12,7 +12,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -28,8 +28,7 @@ import java.util.List;
  */
 @Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 @Config(modid = FTBUtilities.MOD_ID, category = "")
-public class FTBUtilitiesConfig
-{
+public class FTBUtilitiesConfig {
 	@Config.RequiresWorldRestart
 	public static final AutoShutdown auto_shutdown = new AutoShutdown();
 
@@ -51,8 +50,7 @@ public class FTBUtilitiesConfig
 	@Config.LangKey("ftblib.debugging")
 	public static final Debugging debugging = new Debugging();
 
-	public static class AutoShutdown
-	{
+	public static class AutoShutdown {
 		@Config.LangKey("addServer.resourcePack.enabled")
 		@Config.Comment("Enables auto-shutdown.")
 		public boolean enabled = false;
@@ -65,11 +63,10 @@ public class FTBUtilitiesConfig
 				"Time Format: HH:MM. If the system time matches a value, server will shut down.",
 				"It will look for closest value available that is not equal to current time."
 		})
-		public String[] times = {"04:00", "16:00"};
+		public String[] times = { "04:00", "16:00" };
 	}
 
-	public static class AFK
-	{
+	public static class AFK {
 		@Config.LangKey("addServer.resourcePack.enabled")
 		@Config.Comment("Enables afk timer.")
 		public boolean enabled = true;
@@ -77,7 +74,7 @@ public class FTBUtilitiesConfig
 		@Config.Comment("Enables afk timer in singleplayer.")
 		public boolean enabled_singleplayer = false;
 
-		@Config.Comment({"After how much time it will display notification to all players."})
+		@Config.Comment({ "After how much time it will display notification to all players." })
 		public String notification_timer = "5m";
 
 		@Config.Comment("Will print in console when someone goes/comes back from AFK.")
@@ -85,15 +82,12 @@ public class FTBUtilitiesConfig
 
 		private long notificationTimer = -1L;
 
-		public boolean isEnabled(MinecraftServer server)
-		{
+		public boolean isEnabled(MinecraftServer server) {
 			return enabled && (enabled_singleplayer || !server.isSinglePlayer());
 		}
 
-		public long getNotificationTimer()
-		{
-			if (notificationTimer < 0L)
-			{
+		public long getNotificationTimer() {
+			if (notificationTimer < 0L) {
 				notificationTimer = Ticks.get(notification_timer).millis();
 			}
 
@@ -101,8 +95,7 @@ public class FTBUtilitiesConfig
 		}
 	}
 
-	public static class Chat
-	{
+	public static class Chat {
 		@Config.Comment("Adds ~ to player names that have changed nickname to prevent trolling.")
 		public boolean add_nickname_tilde = false;
 
@@ -110,8 +103,7 @@ public class FTBUtilitiesConfig
 		public boolean replace_tab_names = true;
 	}
 
-	public static class Commands
-	{
+	public static class Commands {
 		public boolean warp = true;
 		public boolean home = true;
 		public boolean back = true;
@@ -135,8 +127,7 @@ public class FTBUtilitiesConfig
 		public boolean rec = true;
 	}
 
-	public static class Login
-	{
+	public static class Login {
 		@Config.Comment("Enables message of the day.")
 		public boolean enable_motd = false;
 
@@ -150,31 +141,27 @@ public class FTBUtilitiesConfig
 		public boolean enable_event_badges = true;
 
 		@Config.Comment("Message of the day. This will be displayed when player joins the server.")
-		public String[] motd = {"\"Hello player!\""};
+		public String[] motd = { "\"Hello player!\"" };
 
-		private List<ITextComponent> motdComponents = null;
+		private List<IChatComponent> motdComponents = null;
 		private List<ItemStack> startingItems = null;
 
 		@Config.Comment({
 				"Items to give player when he first joins the server.",
 				"Format: '{id:\"ID\",Count:X,Damage:X,tag:{}}', Use /print_item to get NBT of item in your hand."
 		})
-		public String[] starting_items = {"{id:\"minecraft:stone_sword\",Count:1,Damage:1,tag:{display:{Name:\"Epic Stone Sword\"}}}"};
+		public String[] starting_items = {
+				"{id:\"minecraft:stone_sword\",Count:1,Damage:1,tag:{display:{Name:\"Epic Stone Sword\"}}}" };
 
-		public List<ITextComponent> getMOTD()
-		{
-			if (motdComponents == null)
-			{
+		public List<IChatComponent> getMOTD() {
+			if (motdComponents == null) {
 				motdComponents = new ArrayList<>();
 
-				if (enable_motd)
-				{
-					for (String s : motd)
-					{
-						ITextComponent t = JsonUtils.deserializeTextComponent(DataReader.get(s).safeJson());
+				if (enable_motd) {
+					for (String s : motd) {
+						IChatComponent t = JsonUtils.deserializeTextComponent(DataReader.get(s).safeJson());
 
-						if (t != null)
-						{
+						if (t != null) {
 							motdComponents.add(t);
 						}
 					}
@@ -184,27 +171,19 @@ public class FTBUtilitiesConfig
 			return motdComponents;
 		}
 
-		public List<ItemStack> getStartingItems()
-		{
-			if (startingItems == null)
-			{
+		public List<ItemStack> getStartingItems() {
+			if (startingItems == null) {
 				startingItems = new ArrayList<>();
 
-				if (enable_starting_items)
-				{
-					for (String s : starting_items)
-					{
-						try
-						{
+				if (enable_starting_items) {
+					for (String s : starting_items) {
+						try {
 							ItemStack stack = ItemStackSerializer.parseItem(s);
 
-							if (!stack.isEmpty())
-							{
+							if (!stack.isEmpty()) {
 								startingItems.add(stack);
 							}
-						}
-						catch (Exception ex)
-						{
+						} catch (Exception ex) {
 							ex.printStackTrace();
 						}
 					}
@@ -215,8 +194,7 @@ public class FTBUtilitiesConfig
 		}
 	}
 
-	public static class RanksConfig
-	{
+	public static class RanksConfig {
 		@Config.LangKey("addServer.resourcePack.enabled")
 		@Config.RequiresMcRestart
 		@Config.Comment("Enables ranks and adds command.x permissions and allows ranks to control them.")
@@ -229,10 +207,8 @@ public class FTBUtilitiesConfig
 		public boolean override_commands = true;
 	}
 
-	public static class WorldConfig
-	{
-		public static class WorldLogging
-		{
+	public static class WorldConfig {
+		public static class WorldLogging {
 			@Config.Comment("Enables world logging.")
 			@Config.LangKey("addServer.resourcePack.enabled")
 			public boolean enabled = false;
@@ -252,9 +228,9 @@ public class FTBUtilitiesConfig
 			@Config.Comment("Logs item clicking in air.")
 			public boolean item_clicked_in_air = true;
 
-			public boolean log(EntityPlayerMP player)
-			{
-				return enabled && (include_creative_players || !player.capabilities.isCreativeMode) && (include_fake_players || !ServerUtils.isFake(player));
+			public boolean log(EntityPlayerMP player) {
+				return enabled && (include_creative_players || !player.capabilities.isCreativeMode)
+						&& (include_fake_players || !ServerUtils.isFake(player));
 			}
 		}
 
@@ -276,7 +252,7 @@ public class FTBUtilitiesConfig
 		public boolean spawn_area_in_sp = false;
 
 		@Config.Comment("Dimensions where chunk claiming isn't allowed.")
-		public int[] blocked_claiming_dimensions = { };
+		public int[] blocked_claiming_dimensions = {};
 
 		@Config.Comment("If set to DEFAULT, then players can decide their PVP status.")
 		@Config.LangKey("player_config.ftbutilities.enable_pvp")
@@ -307,8 +283,8 @@ public class FTBUtilitiesConfig
 		@Config.Comment({
 				"List of items that will have right-click function disabled on both sides.",
 				"You can use '/inv disable_right_click' command to do with from in-game.",
-				"Syntax: modid:item:metadata. Set metadata to * to ignore it."})
-		public String[] disabled_right_click_items = { };
+				"Syntax: modid:item:metadata. Set metadata to * to ignore it." })
+		public String[] disabled_right_click_items = {};
 
 		private List<DisabledItem> disabledItems = null;
 
@@ -339,25 +315,19 @@ public class FTBUtilitiesConfig
 		@Config.Comment("Show play time in corner.")
 		public boolean show_playtime = false;
 
-		private static class DisabledItem
-		{
+		private static class DisabledItem {
 			private Item item;
 			private int metadata;
 		}
 
-		public boolean blockDimension(int dimension)
-		{
-			if (!ClaimedChunks.isActive())
-			{
+		public boolean blockDimension(int dimension) {
+			if (!ClaimedChunks.isActive()) {
 				return true;
 			}
 
-			if (blocked_claiming_dimensions.length > 0)
-			{
-				for (int i : blocked_claiming_dimensions)
-				{
-					if (i == dimension)
-					{
+			if (blocked_claiming_dimensions.length > 0) {
+				for (int i : blocked_claiming_dimensions) {
+					if (i == dimension) {
 						return true;
 					}
 				}
@@ -366,39 +336,34 @@ public class FTBUtilitiesConfig
 			return false;
 		}
 
-		public boolean isItemRightClickDisabled(ItemStack stack)
-		{
-			if (disabledItems == null)
-			{
+		public boolean isItemRightClickDisabled(ItemStack stack) {
+			if (disabledItems == null) {
 				disabledItems = new ArrayList<>();
 
-				for (String s : disabled_right_click_items)
-				{
+				for (String s : disabled_right_click_items) {
 					String[] s1 = s.split("@", 2);
 					Item item = Item.getByNameOrId(s1[0]);
 
-					if (item != null && item != Items.AIR)
-					{
+					if (item != null && item != Items.AIR) {
 						DisabledItem di = new DisabledItem();
 						di.item = item;
-						di.metadata = (s1.length == 1 || s1[1].startsWith("*")) ? OreDictionary.WILDCARD_VALUE : Integer.parseInt(s1[1].trim());
+						di.metadata = (s1.length == 1 || s1[1].startsWith("*")) ? OreDictionary.WILDCARD_VALUE
+								: Integer.parseInt(s1[1].trim());
 						disabledItems.add(di);
 					}
 				}
 			}
 
-			if (disabledItems.isEmpty())
-			{
+			if (disabledItems.isEmpty()) {
 				return false;
 			}
 
 			Item item = stack.getItem();
 			int meta = stack.getMetadata();
 
-			for (DisabledItem disabledItem : disabledItems)
-			{
-				if (disabledItem.item == item && (disabledItem.metadata == OreDictionary.WILDCARD_VALUE || disabledItem.metadata == meta))
-				{
+			for (DisabledItem disabledItem : disabledItems) {
+				if (disabledItem.item == item
+						&& (disabledItem.metadata == OreDictionary.WILDCARD_VALUE || disabledItem.metadata == meta)) {
 					return true;
 				}
 			}
@@ -407,14 +372,12 @@ public class FTBUtilitiesConfig
 		}
 	}
 
-	public static class Debugging
-	{
+	public static class Debugging {
 		@Config.Comment("Print a message in console every time a chunk is forced or unforced. Recommended to be off, because spam.")
 		public boolean log_chunkloading = false;
 	}
 
-	public static void sync()
-	{
+	public static void sync() {
 		ConfigManager.sync(FTBUtilities.MOD_ID, Config.Type.INSTANCE);
 		login.motdComponents = null;
 		login.startingItems = null;
@@ -423,10 +386,8 @@ public class FTBUtilitiesConfig
 	}
 
 	@SubscribeEvent
-	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
-	{
-		if (event.getModID().equals(FTBUtilities.MOD_ID))
-		{
+	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+		if (event.getModID().equals(FTBUtilities.MOD_ID)) {
 			sync();
 		}
 	}

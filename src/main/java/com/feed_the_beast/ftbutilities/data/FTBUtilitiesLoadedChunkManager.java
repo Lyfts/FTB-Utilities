@@ -1,5 +1,13 @@
 package com.feed_the_beast.ftbutilities.data;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
@@ -8,19 +16,13 @@ import com.feed_the_beast.ftblib.lib.util.ServerUtils;
 import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
+
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author LatvianModder
@@ -41,7 +43,7 @@ public class FTBUtilitiesLoadedChunkManager implements ForgeChunkManager.Loading
 	@Override
 	public void ticketsLoaded(List<ForgeChunkManager.Ticket> tickets, World world)
 	{
-		final int dim = world.provider.getDimension();
+		final int dim = world.provider.dimensionId;
 		/* Uncomment?
 		Iterator<TicketKey> ticketMapItr = ticketMap.keySet().iterator();
 
@@ -71,7 +73,7 @@ public class FTBUtilitiesLoadedChunkManager implements ForgeChunkManager.Loading
 			{
 				ticketMap.put(key, ticket);
 
-				for (ChunkPos pos : ticket.getChunkList())
+				for (ChunkCoordIntPair pos : ticket.getChunkList())
 				{
 					chunkTickets.put(new ChunkDimPos(pos, key.dimension), ticket);
 					ForgeChunkManager.forceChunk(ticket, pos);
@@ -87,7 +89,7 @@ public class FTBUtilitiesLoadedChunkManager implements ForgeChunkManager.Loading
 
 		if (ticket == null && DimensionManager.isDimensionRegistered(key.dimension))
 		{
-			WorldServer worldServer = server.getWorld(key.dimension);
+			WorldServer worldServer = server.worldServerForDimension(key.dimension);
 			ticket = ForgeChunkManager.requestTicket(FTBUtilities.INST, worldServer, ForgeChunkManager.Type.NORMAL);
 
 			if (ticket != null)

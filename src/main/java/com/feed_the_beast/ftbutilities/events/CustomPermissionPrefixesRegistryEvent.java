@@ -1,9 +1,9 @@
 package com.feed_the_beast.ftbutilities.events;
 
-import com.feed_the_beast.ftbutilities.data.NodeEntry;
-import net.minecraftforge.server.permission.DefaultPermissionLevel;
-
 import java.util.function.Consumer;
+
+import com.feed_the_beast.ftblib.lib.util.permission.DefaultPermissionLevel;
+import com.feed_the_beast.ftbutilities.data.NodeEntry;
 
 /**
  * @author LatvianModder

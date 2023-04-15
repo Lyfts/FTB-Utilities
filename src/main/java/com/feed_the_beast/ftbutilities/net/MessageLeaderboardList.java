@@ -7,29 +7,24 @@ import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.Leaderboard;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.server.permission.PermissionAPI;
+import net.minecraft.util.IChatComponent;
+import com.feed_the_beast.ftblib.lib.util.permission.PermissionAPI;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class MessageLeaderboardList extends MessageToServer
-{
+public class MessageLeaderboardList extends MessageToServer {
 	@Override
-	public NetworkWrapper getWrapper()
-	{
+	public NetworkWrapper getWrapper() {
 		return FTBUtilitiesNetHandler.STATS;
 	}
 
 	@Override
-	public void onMessage(EntityPlayerMP player)
-	{
-		Map<ResourceLocation, ITextComponent> map = new LinkedHashMap<>();
+	public void onMessage(EntityPlayerMP player) {
+		Map<ResourceLocation, IChatComponent> map = new LinkedHashMap<>();
 
-		for (Leaderboard leaderboard : FTBUtilitiesCommon.LEADERBOARDS.values())
-		{
-			if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.getLeaderboardNode(leaderboard)))
-			{
+		for (Leaderboard leaderboard : FTBUtilitiesCommon.LEADERBOARDS.values()) {
+			if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.getLeaderboardNode(leaderboard))) {
 				map.put(leaderboard.id, leaderboard.getTitle());
 			}
 		}

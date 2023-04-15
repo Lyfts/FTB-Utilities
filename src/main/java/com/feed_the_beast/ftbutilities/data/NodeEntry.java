@@ -1,10 +1,10 @@
 package com.feed_the_beast.ftbutilities.data;
 
+import javax.annotation.Nullable;
+
 import com.feed_the_beast.ftblib.lib.config.ConfigBoolean;
 import com.feed_the_beast.ftblib.lib.config.ConfigValue;
-import net.minecraftforge.server.permission.DefaultPermissionLevel;
-
-import javax.annotation.Nullable;
+import com.feed_the_beast.ftblib.lib.util.permission.DefaultPermissionLevel;
 
 /**
  * @author LatvianModder
