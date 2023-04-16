@@ -10,6 +10,7 @@ import com.feed_the_beast.ftbutilities.net.FTBUtilitiesNetHandler;
 import com.feed_the_beast.ftbutilities.ranks.FTBUtilitiesPermissionHandler;
 
 import cpw.mods.fml.common.event.FMLInterModComms;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeChunkManager;
 
@@ -23,8 +24,8 @@ public class FTBUtilitiesCommon {
 	public static final Map<ResourceLocation, Leaderboard> LEADERBOARDS = new HashMap<>();
 	public static final Map<String, String> KAOMOJIS = new HashMap<>();
 
-	public void preInit() {
-		FTBUtilitiesConfig.sync();
+	public void preInit(FMLPreInitializationEvent event) {
+		FTBUtilitiesConfig.init(event);
 
 		if (FTBUtilitiesConfig.ranks.enabled) {
 			PermissionAPI.setPermissionHandler(FTBUtilitiesPermissionHandler.INSTANCE);

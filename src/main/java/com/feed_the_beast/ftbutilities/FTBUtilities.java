@@ -59,7 +59,7 @@ public class FTBUtilities {
 
 	@Mod.EventHandler
 	public void onPreInit(FMLPreInitializationEvent event) {
-		PROXY.preInit();
+		PROXY.preInit(event);
 	}
 
 	@Mod.EventHandler

@@ -1,35 +1,48 @@
 package com.feed_the_beast.ftbutilities.client;
 
-import com.feed_the_beast.ftblib.Config;
 import com.feed_the_beast.ftblib.lib.math.Ticks;
-import com.feed_the_beast.ftbutilities.FTBUtilities;
+
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.common.config.Configuration;
+
+import java.io.File;
 
 /**
  * @author LatvianModder
  */
-@Config(modid = FTBUtilities.MOD_ID, category = "", name = "../local/client/" + FTBUtilities.MOD_ID)
-@Config.LangKey(FTBUtilities.MOD_ID + "_client")
 public class FTBUtilitiesClientConfig
 {
-	@Config.LangKey("stat.generalButton")
+
+	public static Configuration config;
+
+	public static void init(FMLPreInitializationEvent event) {
+		config = new Configuration(new File(event.getModConfigurationDirectory() + "../local/client/ftbutilities.cfg"));
+		sync();
+	}
+
+	public static boolean sync() {
+
+		config.load();
+		general.show_shutdown_timer_ms = -1L;
+//		general.render_badges = config.get(Configuration.CATEGORY_GENERAL, "render_badges", false, "Render badges.").getBoolean();
+		general.journeymap_overlay = config.get(Configuration.CATEGORY_GENERAL, "journeymap_overlay", false, "Enable JourneyMap overlay. Requires a restart to work.").getBoolean();
+		general.show_shutdown_timer = config.get(Configuration.CATEGORY_GENERAL, "show_shutdown_timer", true, "Show when server will shut down in corner.").getBoolean();
+		general.shutdown_timer_start = config.get(Configuration.CATEGORY_GENERAL, "shutdown_timer_start", "1m", "When will it start to show the shutdown timer.").getString();
+		general.button_daytime = config.get(Configuration.CATEGORY_GENERAL, "button_daytime", 6000, "", 0, 23999).getInt();
+		general.button_nighttime = config.get(Configuration.CATEGORY_GENERAL, "button_nighttime", 18000, "", 0, 239999).getInt();
+
+		return true;
+	}
+
 	public static final General general = new General();
 
 	public static class General
 	{
-		@Config.Comment("Render Badges.")
-		public boolean render_badges = true;
-
-		@Config.Comment("Enable JourneyMap overlay. Requires a restart to work.")
-		public boolean journeymap_overlay = false;
-
-		@Config.Comment("Show when server will shut down in corner.")
-		public boolean show_shutdown_timer = true;
-
-		@Config.Comment("When will it start to show the shutdown timer.")
-		public String shutdown_timer_start = "1m";
-
+		public boolean render_badges = false;
+		public boolean journeymap_overlay;
+		public boolean show_shutdown_timer;
+		public String shutdown_timer_start;
 		private long show_shutdown_timer_ms = -1L;
-
 		public long getShowShutdownTimer()
 		{
 			if (show_shutdown_timer_ms == -1L)
@@ -39,16 +52,8 @@ public class FTBUtilitiesClientConfig
 
 			return show_shutdown_timer_ms;
 		}
-
-		@Config.RangeInt(min = 0, max = 23999)
-		public int button_daytime = 6000;
-
-		@Config.RangeInt(min = 0, max = 23999)
-		public int button_nighttime = 18000;
+		public int button_daytime;
+		public int button_nighttime;
 	}
 
-	public static void sync()
-	{
-		general.show_shutdown_timer_ms = -1L;
-	}
 }

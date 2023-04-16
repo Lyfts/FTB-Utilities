@@ -7,6 +7,7 @@ import com.feed_the_beast.ftbutilities.command.client.CommandPing;
 import org.lwjgl.input.Keyboard;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.ClientCommandHandler;
 
@@ -17,11 +18,11 @@ public class FTBUtilitiesClient extends FTBUtilitiesCommon // FTBLibClient
 	public static KeyBinding KEY_NBT, KEY_TRASH;
 
 	@Override
-	public void preInit()
+	public void preInit(FMLPreInitializationEvent event)
 	{
-		super.preInit();
+		super.preInit(event);
 
-		FTBUtilitiesClientConfig.sync();
+		FTBUtilitiesClientConfig.init(event);
 		ClientRegistry.registerKeyBinding(KEY_NBT = new KeyBinding("key.ftbutilities.nbt", Keyboard.KEY_N, FTBLib.KEY_CATEGORY));
 		ClientRegistry.registerKeyBinding(KEY_TRASH = new KeyBinding("key.ftbutilities.trash", Keyboard.KEY_DELETE, FTBLib.KEY_CATEGORY));
 	}
