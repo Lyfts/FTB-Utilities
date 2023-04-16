@@ -1,11 +1,11 @@
 [
 	{
-		"modid": "ftbutilities",
-		"name": "FTB Utilities",
+		"modid": "${modId}",
+		"name": "${modName}",
 		"description": "",
-		"version": "${version}",
-		"mcversion": "${mcversion}",
-		"url": "http://minecraft.curseforge.com/projects/ftb-utilities",
+		"version": "${modVersion}",
+		"mcversion": "${minecraftVersion}",
+		"url": "",
 		"updateUrl": "",
 		"authorList": ["LatvianModder"],
 		"credits": "",
