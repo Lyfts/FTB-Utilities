@@ -28,10 +28,11 @@ import java.util.List;
  */
 //@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesConfig {
+	public static final FTBUtilitiesConfig INST = new FTBUtilitiesConfig();
 
 	public static Configuration config;
 	public static final String AUTO_SHUTDOWN = "auto_shutdown";
-	public static final String AFK = "afl";
+	public static final String AFK = "afk";
 	public static final String CHAT = "chat";
 	public static final String COMMANDS = "commands";
 	public static final String LOGIN = "login";
@@ -42,6 +43,7 @@ public class FTBUtilitiesConfig {
 
 	public static void init(FMLPreInitializationEvent event) {
 		config = new Configuration(event.getSuggestedConfigurationFile());
+		sync();
 	}
 
 	public static boolean sync() {
@@ -356,7 +358,7 @@ public class FTBUtilitiesConfig {
 	}
 
 	@SubscribeEvent
-	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
 		if (event.modID.equals(FTBUtilities.MOD_ID)) {
 			sync();
 		}

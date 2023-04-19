@@ -6,6 +6,10 @@ import com.feed_the_beast.ftbutilities.data.Leaderboard;
 import com.feed_the_beast.ftbutilities.data.NodeEntry;
 import com.feed_the_beast.ftbutilities.events.CustomPermissionPrefixesRegistryEvent;
 import com.feed_the_beast.ftbutilities.events.LeaderboardRegistryEvent;
+import com.feed_the_beast.ftbutilities.handlers.FTBUtilitiesPlayerEventHandler;
+import com.feed_the_beast.ftbutilities.handlers.FTBUtilitiesRegistryEventHandler;
+import com.feed_the_beast.ftbutilities.handlers.FTBUtilitiesServerEventHandler;
+import com.feed_the_beast.ftbutilities.handlers.FTBUtilitiesWorldEventHandler;
 import com.feed_the_beast.ftbutilities.net.FTBUtilitiesNetHandler;
 import com.feed_the_beast.ftbutilities.ranks.FTBUtilitiesPermissionHandler;
 
@@ -13,6 +17,7 @@ import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,6 +66,12 @@ public class FTBUtilitiesCommon {
 //		if (Loader.isModLoaded(Aurora.MOD_ID)) {
 //			AuroraIntegration.init();
 //		}
+
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesConfig.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesPlayerEventHandler.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesRegistryEventHandler.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesServerEventHandler.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesWorldEventHandler.INST);
 	}
 
 	public void init() {

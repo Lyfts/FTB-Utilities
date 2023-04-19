@@ -28,10 +28,10 @@ import java.io.File;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesRegistryEventHandler {
+	public static final FTBUtilitiesRegistryEventHandler INST = new FTBUtilitiesRegistryEventHandler();
 	@SubscribeEvent
-	public static void onFTBLibPreInitRegistry(FTBLibPreInitRegistryEvent event) {
+	public void onFTBLibPreInitRegistry(FTBLibPreInitRegistryEvent event) {
 		FTBLibPreInitRegistryEvent.Registry registry = event.getRegistry();
 		registry.registerServerReloadHandler(new ResourceLocation(FTBUtilities.MOD_ID, "ranks"),
 				reloadEvent -> Ranks.INSTANCE.reload());

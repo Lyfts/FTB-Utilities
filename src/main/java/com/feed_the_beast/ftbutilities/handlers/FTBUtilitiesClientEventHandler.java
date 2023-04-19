@@ -34,8 +34,8 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 /**
  * @author LatvianModder
  */
-// @Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID, value = Side.CLIENT)
 public class FTBUtilitiesClientEventHandler {
+	public static final FTBUtilitiesClientEventHandler INST = new FTBUtilitiesClientEventHandler();
 	private static final Map<UUID, Icon> BADGE_CACHE = new HashMap<>();
 	public static long shutdownTime = 0L;
 	public static int currentPlaytime = 0;
@@ -61,13 +61,13 @@ public class FTBUtilitiesClientEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onClientDisconnected(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+	public void onClientDisconnected(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
 		BADGE_CACHE.clear();
 		shutdownTime = 0L;
 	}
 
 	@SubscribeEvent
-	public static void onDebugInfoEvent(RenderGameOverlayEvent.Text event) {
+	public void onDebugInfoEvent(RenderGameOverlayEvent.Text event) {
 		if (Minecraft.getMinecraft().gameSettings.showDebugInfo) {
 			return;
 		}
@@ -90,7 +90,7 @@ public class FTBUtilitiesClientEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onKeyEvent(InputEvent.KeyInputEvent event) {
+	public void onKeyEvent(InputEvent.KeyInputEvent event) {
 		if (FTBUtilitiesClient.KEY_NBT.isPressed()) {
 			MessageEditNBTRequest.editNBT();
 		}
@@ -101,7 +101,7 @@ public class FTBUtilitiesClientEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onCustomClick(CustomClickEvent event) {
+	public void onCustomClick(CustomClickEvent event) {
 		if (event.getID().getResourceDomain().equals(FTBUtilities.MOD_ID)) {
 			switch (event.getID().getResourcePath()) {
 				case "toggle_gamemode":
@@ -140,7 +140,7 @@ public class FTBUtilitiesClientEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onClientWorldTick(TickEvent.ClientTickEvent event) {
+	public void onClientWorldTick(TickEvent.ClientTickEvent event) {
 		Minecraft mc = Minecraft.getMinecraft();
 
 		if (event.phase == TickEvent.Phase.START && mc.theWorld != null

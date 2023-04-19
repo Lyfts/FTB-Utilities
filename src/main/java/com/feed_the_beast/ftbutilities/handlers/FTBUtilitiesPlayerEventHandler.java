@@ -22,13 +22,11 @@ import com.feed_the_beast.ftbutilities.net.MessageUpdateTabName;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
@@ -48,15 +46,15 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesPlayerEventHandler {
+	public static final FTBUtilitiesPlayerEventHandler INST = new FTBUtilitiesPlayerEventHandler();
 	@SubscribeEvent
-	public static void registerPlayerData(ForgePlayerDataEvent event) {
+	public void registerPlayerData(ForgePlayerDataEvent event) {
 		event.register(new FTBUtilitiesPlayerData(event.getPlayer()));
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public static void onPlayerLoggedIn(ForgePlayerLoggedInEvent event) {
+	public void onPlayerLoggedIn(ForgePlayerLoggedInEvent event) {
 		EntityPlayerMP player = event.getPlayer().getPlayer();
 
 		if (ServerUtils.isFirstLogin(player, "ftbutilities_starting_items")) {
@@ -87,7 +85,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onPlayerLoggedOut(ForgePlayerLoggedOutEvent event) {
+	public void onPlayerLoggedOut(ForgePlayerLoggedOutEvent event) {
 		EntityPlayerMP player = event.getPlayer().getPlayer();
 
 		if (ClaimedChunks.isActive()) {
@@ -99,17 +97,17 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
+	public void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
 		event.entityPlayer.getEntityData().removeTag(FTBUtilitiesPlayerData.TAG_LAST_CHUNK);
 	}
 
 	@SubscribeEvent
-	public static void getPlayerSettings(ForgePlayerConfigEvent event) {
+	public void getPlayerSettings(ForgePlayerConfigEvent event) {
 		FTBUtilitiesPlayerData.get(event.getPlayer()).addConfig(event.getConfig());
 	}
 
 	@SubscribeEvent
-	public static void onDeath(LivingDeathEvent event) {
+	public void onDeath(LivingDeathEvent event) {
 		EntityLivingBase entity = event.entityLiving;
 		if (entity instanceof EntityPlayerMP) {
 			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) entity;
@@ -119,7 +117,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onChunkChanged(EntityEvent.EnteringChunk event) {
+	public void onChunkChanged(EntityEvent.EnteringChunk event) {
 		if (event.entity.worldObj.isRemote || !(event.entity instanceof EntityPlayerMP) || !Universe.loaded()) {
 			return;
 		}
@@ -138,7 +136,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onEntityDamage(LivingAttackEvent event) {
+	public void onEntityDamage(LivingAttackEvent event) {
 		if (FTBUtilitiesConfig.world.disable_player_suffocation_damage && event.entity instanceof EntityPlayer
 				&& (event.source == DamageSource.inWall)) {
 //			event.ammount = 0;
@@ -146,8 +144,10 @@ public class FTBUtilitiesPlayerEventHandler {
 		}
 	}
 
+	//TODO: I am registering the event handlers because ftbutil data was not working!!!
+
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onEntityAttacked(AttackEntityEvent event) {
+	public void onEntityAttacked(AttackEntityEvent event) {
 		if (!ClaimedChunks.canAttackEntity(event.entityPlayer, event.target)) {
 			InvUtils.forceUpdate(event.entityPlayer);
 			event.setCanceled(true);
@@ -155,7 +155,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onRightClickBlock(PlayerInteractEvent event) {
+	public void onRightClickBlock(PlayerInteractEvent event) {
 		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
 			return;
 		}
@@ -176,7 +176,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onRightClickItem(PlayerInteractEvent event) {
+	public void onRightClickItem(PlayerInteractEvent event) {
 		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR) {
 			return;
 		}
@@ -197,14 +197,14 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onBlockBreak(BlockEvent.BreakEvent event) {
+	public void onBlockBreak(BlockEvent.BreakEvent event) {
 		if (ClaimedChunks.blockBlockEditing(event.getPlayer(), event.x, event.y, event.z, 0)) {
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onBlockPlace(BlockEvent.PlaceEvent event) {
+	public void onBlockPlace(BlockEvent.PlaceEvent event) {
 		if (ClaimedChunks.blockBlockEditing(event.player, event.x, event.y, event.z, 0)) {
 			InvUtils.forceUpdate(event.player);
 			event.setCanceled(true);
@@ -212,7 +212,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void onBlockLeftClick(PlayerInteractEvent event) {
+	public void onBlockLeftClick(PlayerInteractEvent event) {
 		if (event.action != PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
 			return;
 		}
@@ -229,7 +229,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	 */
 
 	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void onNameFormat(PlayerEvent.NameFormat event) {
+	public void onNameFormat(PlayerEvent.NameFormat event) {
 		if (FTBUtilitiesConfig.commands.nick && Universe.loaded()
 				&& event.entityPlayer instanceof EntityPlayerMP) {
 			ForgePlayer p = Universe.get().getPlayer(event.entityPlayer.getGameProfile());
@@ -272,7 +272,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onBlockBreakLog(BlockEvent.BreakEvent event) {
+	public void onBlockBreakLog(BlockEvent.BreakEvent event) {
 		EntityPlayer player = event.getPlayer();
 
 		if (FTBUtilitiesConfig.world.logging.block_broken && player instanceof EntityPlayerMP
@@ -283,7 +283,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onBlockPlaceLog(BlockEvent.PlaceEvent event) {
+	public void onBlockPlaceLog(BlockEvent.PlaceEvent event) {
 		EntityPlayer player = event.player;
 
 		if (FTBUtilitiesConfig.world.logging.block_placed && player instanceof EntityPlayerMP
@@ -294,7 +294,7 @@ public class FTBUtilitiesPlayerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onRightClickItemLog(PlayerInteractEvent event) {
+	public void onRightClickItemLog(PlayerInteractEvent event) {
 		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR) {
 			return;
 		}

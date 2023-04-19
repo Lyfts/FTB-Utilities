@@ -44,8 +44,8 @@ import java.util.regex.Pattern;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesServerEventHandler {
+	public static final FTBUtilitiesServerEventHandler INST = new FTBUtilitiesServerEventHandler();
 	private static final ResourceLocation AFK_ID = new ResourceLocation(FTBUtilities.MOD_ID, "afk");
 	private static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
 	private static final String STRIKETHROUGH_REPLACE = "&m$1&m";
@@ -55,14 +55,14 @@ public class FTBUtilitiesServerEventHandler {
 	private static final String ITALIC_REPLACE = "&o$1$2&o";
 
 	@SubscribeEvent
-	public static void onCacheCleared(UniverseClearCacheEvent event) {
+	public void onCacheCleared(UniverseClearCacheEvent event) {
 		if (Ranks.INSTANCE != null) {
 			Ranks.INSTANCE.clearCache();
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public static void onServerChatEvent(ServerChatEvent event) {
+	public void onServerChatEvent(ServerChatEvent event) {
 		if (!FTBUtilitiesConfig.ranks.override_chat || !Ranks.isActive()) {
 			return;
 		}
@@ -146,7 +146,7 @@ public class FTBUtilitiesServerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onServerTick(TickEvent.ServerTickEvent event) {
+	public void onServerTick(TickEvent.ServerTickEvent event) {
 		if (!Universe.loaded()) {
 			return;
 		}
@@ -235,7 +235,7 @@ public class FTBUtilitiesServerEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onWorldTick(TickEvent.WorldTickEvent event) {
+	public void onWorldTick(TickEvent.WorldTickEvent event) {
 		if (!event.world.isRemote && event.phase == TickEvent.Phase.START
 				&& event.world.provider.dimensionId == FTBUtilitiesConfig.world.spawn_dimension) {
 			if (FTBUtilitiesConfig.world.forced_spawn_dimension_time != -1) {

@@ -28,10 +28,10 @@ import java.util.function.Function;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesWorldEventHandler {
+	public static final FTBUtilitiesWorldEventHandler INST = new FTBUtilitiesWorldEventHandler();
 	@SubscribeEvent
-	public static void onMobSpawned(EntityJoinWorldEvent event) // FIXME: LivingSpawnEvent.CheckSpawn
+	public void onMobSpawned(EntityJoinWorldEvent event) // FIXME: LivingSpawnEvent.CheckSpawn
 	{
 		if (!event.world.isRemote && !isEntityAllowed(event.entity)) {
 			event.entity.setDead();
@@ -40,7 +40,7 @@ public class FTBUtilitiesWorldEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onDimensionUnload(WorldEvent.Unload event) {
+	public void onDimensionUnload(WorldEvent.Unload event) {
 		if (ClaimedChunks.isActive() && event.world.provider.dimensionId != 0) {
 			ClaimedChunks.instance.markDirty();
 		}
@@ -65,7 +65,7 @@ public class FTBUtilitiesWorldEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
+	public void onExplosionDetonate(ExplosionEvent.Detonate event) {
 		World world = event.world;
 		Explosion explosion = event.explosion;
 
