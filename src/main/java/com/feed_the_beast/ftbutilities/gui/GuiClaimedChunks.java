@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbutilities.gui;
 
-import com.feed_the_beast.ftblib.lib.EnumTeamColor;
 import com.feed_the_beast.ftblib.lib.client.CachedVertexData;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.Button;
@@ -12,48 +11,37 @@ import com.feed_the_beast.ftblib.lib.gui.misc.GuiChunkSelectorBase;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.ServerUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
-import com.feed_the_beast.ftbutilities.FTBUtilities;
-import com.feed_the_beast.ftbutilities.events.chunks.UpdateClientDataEvent;
 import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksModify;
 import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksRequest;
-import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksUpdate;
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.ChunkCoordIntPair;
 
-import org.lwjgl.opengl.GL11;
-
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-
 import javax.annotation.Nullable;
-import java.util.Arrays;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID, value = Side.CLIENT)
 public class GuiClaimedChunks extends GuiChunkSelectorBase {
 	public static GuiClaimedChunks instance;
-	private static final ClientClaimedChunks.ChunkData[] chunkData = new ClientClaimedChunks.ChunkData[ChunkSelectorMap.TILES_GUI
+	public static final ClientClaimedChunks.ChunkData[] chunkData = new ClientClaimedChunks.ChunkData[ChunkSelectorMap.TILES_GUI
 			* ChunkSelectorMap.TILES_GUI];
-	private static int claimedChunks, loadedChunks, maxClaimedChunks, maxLoadedChunks;
+	public static int claimedChunks, loadedChunks, maxClaimedChunks, maxLoadedChunks;
 	private static final ClientClaimedChunks.ChunkData NULL_CHUNK_DATA = new ClientClaimedChunks.ChunkData(
 			new ClientClaimedChunks.Team((short) 0), 0);
 
-	private static final CachedVertexData AREA = new CachedVertexData(GL11.GL_QUADS,
-			CachedVertexData.POSITION_COLOR);
+	public static final CachedVertexData AREA = new CachedVertexData(GL11.GL_QUADS, false, true, false);
 
 	@Nullable
-	private static ClientClaimedChunks.ChunkData getAt(int x, int y) {
+	public static ClientClaimedChunks.ChunkData getAt(int x, int y) {
 		int i = x + y * ChunkSelectorMap.TILES_GUI;
 		return i < 0 || i >= chunkData.length ? null : chunkData[i];
 	}
 
-	private static boolean hasBorder(ClientClaimedChunks.ChunkData data, @Nullable ClientClaimedChunks.ChunkData with) {
+	public static boolean hasBorder(ClientClaimedChunks.ChunkData data, @Nullable ClientClaimedChunks.ChunkData with) {
 		if (with == null) {
 			with = NULL_CHUNK_DATA;
 		}
@@ -61,85 +49,6 @@ public class GuiClaimedChunks extends GuiChunkSelectorBase {
 		return (data.flags != with.flags || data.team != with.team) && !with.isLoaded();
 	}
 
-	@SubscribeEvent
-	public static void onChunkDataUpdate(UpdateClientDataEvent event) {
-		MessageClaimedChunksUpdate m = event.getMessage();
-		claimedChunks = m.claimedChunks;
-		loadedChunks = m.loadedChunks;
-		maxClaimedChunks = m.maxClaimedChunks;
-		maxLoadedChunks = m.maxLoadedChunks;
-		Arrays.fill(chunkData, null);
-
-		for (ClientClaimedChunks.Team team : m.teams.values()) {
-			for (Map.Entry<Integer, ClientClaimedChunks.ChunkData> entry : team.chunks.entrySet()) {
-				int x = entry.getKey() % ChunkSelectorMap.TILES_GUI;
-				int z = entry.getKey() / ChunkSelectorMap.TILES_GUI;
-				chunkData[x + z * ChunkSelectorMap.TILES_GUI] = entry.getValue();
-			}
-		}
-
-		AREA.reset();
-		EnumTeamColor prevCol = null;
-		ClientClaimedChunks.ChunkData data;
-
-		for (int i = 0; i < chunkData.length; i++) {
-			data = chunkData[i];
-
-			if (data == null) {
-				continue;
-			}
-
-			if (prevCol != data.team.color) {
-				prevCol = data.team.color;
-				AREA.color.set(data.team.color.getColor(), 150);
-			}
-
-			AREA.rect((i % ChunkSelectorMap.TILES_GUI) * TILE_SIZE, (i / ChunkSelectorMap.TILES_GUI) * TILE_SIZE,
-					TILE_SIZE, TILE_SIZE);
-		}
-
-		boolean borderU, borderD, borderL, borderR;
-
-		for (int i = 0; i < chunkData.length; i++) {
-			data = chunkData[i];
-
-			if (data == null) {
-				continue;
-			}
-
-			int x = i % ChunkSelectorMap.TILES_GUI;
-			int dx = x * TILE_SIZE;
-			int y = i / ChunkSelectorMap.TILES_GUI;
-			int dy = y * TILE_SIZE;
-
-			borderU = y > 0 && hasBorder(data, getAt(x, y - 1));
-			borderD = y < (ChunkSelectorMap.TILES_GUI - 1) && hasBorder(data, getAt(x, y + 1));
-			borderL = x > 0 && hasBorder(data, getAt(x - 1, y));
-			borderR = x < (ChunkSelectorMap.TILES_GUI - 1) && hasBorder(data, getAt(x + 1, y));
-
-			if (data.isLoaded()) {
-				AREA.color.set(255, 80, 80, 230);
-			} else {
-				AREA.color.set(80, 80, 80, 230);
-			}
-
-			if (borderU) {
-				AREA.rect(dx, dy, TILE_SIZE, 1);
-			}
-
-			if (borderD) {
-				AREA.rect(dx, dy + TILE_SIZE - 1, TILE_SIZE, 1);
-			}
-
-			if (borderL) {
-				AREA.rect(dx, dy, 1, TILE_SIZE);
-			}
-
-			if (borderR) {
-				AREA.rect(dx + TILE_SIZE - 1, dy, 1, TILE_SIZE);
-			}
-		}
-	}
 
 	private static abstract class ButtonSide extends Button {
 		public ButtonSide(Panel panel, String text, Icon icon) {

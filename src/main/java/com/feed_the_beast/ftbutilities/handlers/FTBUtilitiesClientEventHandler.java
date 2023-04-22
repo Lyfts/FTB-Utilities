@@ -1,11 +1,9 @@
 package com.feed_the_beast.ftbutilities.handlers;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import com.feed_the_beast.ftblib.events.client.CustomClickEvent;
+import com.feed_the_beast.ftblib.lib.EnumTeamColor;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
+import com.feed_the_beast.ftblib.lib.gui.misc.ChunkSelectorMap;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.math.Ticks;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
@@ -13,23 +11,29 @@ import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.client.FTBUtilitiesClient;
 import com.feed_the_beast.ftbutilities.client.FTBUtilitiesClientConfig;
+import com.feed_the_beast.ftbutilities.events.chunks.UpdateClientDataEvent;
+import com.feed_the_beast.ftbutilities.gui.ClientClaimedChunks;
 import com.feed_the_beast.ftbutilities.gui.GuiClaimedChunks;
+import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksUpdate;
 import com.feed_the_beast.ftbutilities.net.MessageEditNBTRequest;
 import com.feed_the_beast.ftbutilities.net.MessageLeaderboardList;
 import com.feed_the_beast.ftbutilities.net.MessageRequestBadge;
 
-import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.relauncher.Side;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author LatvianModder
@@ -155,4 +159,85 @@ public class FTBUtilitiesClientEventHandler {
 			}
 		}
 	}
+
+	@SubscribeEvent
+	public void onChunkDataUpdate(UpdateClientDataEvent event) {
+		MessageClaimedChunksUpdate m = event.getMessage();
+		GuiClaimedChunks.claimedChunks = m.claimedChunks;
+		GuiClaimedChunks.loadedChunks = m.loadedChunks;
+		GuiClaimedChunks.maxClaimedChunks = m.maxClaimedChunks;
+		GuiClaimedChunks.maxLoadedChunks = m.maxLoadedChunks;
+		Arrays.fill(GuiClaimedChunks.chunkData, null);
+
+		for (ClientClaimedChunks.Team team : m.teams.values()) {
+			for (Map.Entry<Integer, ClientClaimedChunks.ChunkData> entry : team.chunks.entrySet()) {
+				int x = entry.getKey() % ChunkSelectorMap.TILES_GUI;
+				int z = entry.getKey() / ChunkSelectorMap.TILES_GUI;
+				GuiClaimedChunks.chunkData[x + z * ChunkSelectorMap.TILES_GUI] = entry.getValue();
+			}
+		}
+
+		GuiClaimedChunks.AREA.reset();
+		EnumTeamColor prevCol = null;
+		ClientClaimedChunks.ChunkData data;
+
+		for (int i = 0; i < GuiClaimedChunks.chunkData.length; i++) {
+			data = GuiClaimedChunks.chunkData[i];
+
+			if (data == null) {
+				continue;
+			}
+
+			if (prevCol != data.team.color) {
+				prevCol = data.team.color;
+				GuiClaimedChunks.AREA.color.set(data.team.color.getColor(), 150);
+			}
+
+			GuiClaimedChunks.AREA.rect((i % ChunkSelectorMap.TILES_GUI) * GuiClaimedChunks.TILE_SIZE, (i / ChunkSelectorMap.TILES_GUI) * GuiClaimedChunks.TILE_SIZE,
+					GuiClaimedChunks.TILE_SIZE, GuiClaimedChunks.TILE_SIZE);
+		}
+
+		boolean borderU, borderD, borderL, borderR;
+
+		for (int i = 0; i < GuiClaimedChunks.chunkData.length; i++) {
+			data = GuiClaimedChunks.chunkData[i];
+
+			if (data == null) {
+				continue;
+			}
+
+			int x = i % ChunkSelectorMap.TILES_GUI;
+			int dx = x * GuiClaimedChunks.TILE_SIZE;
+			int y = i / ChunkSelectorMap.TILES_GUI;
+			int dy = y * GuiClaimedChunks.TILE_SIZE;
+
+			borderU = y > 0 && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x, y - 1));
+			borderD = y < (ChunkSelectorMap.TILES_GUI - 1) && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x, y + 1));
+			borderL = x > 0 && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x - 1, y));
+			borderR = x < (ChunkSelectorMap.TILES_GUI - 1) && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x + 1, y));
+
+			if (data.isLoaded()) {
+				GuiClaimedChunks.AREA.color.set(255, 80, 80, 230);
+			} else {
+				GuiClaimedChunks.AREA.color.set(80, 80, 80, 230);
+			}
+
+			if (borderU) {
+				GuiClaimedChunks.AREA.rect(dx, dy, GuiClaimedChunks.TILE_SIZE, 1);
+			}
+
+			if (borderD) {
+				GuiClaimedChunks.AREA.rect(dx, dy + GuiClaimedChunks.TILE_SIZE - 1, GuiClaimedChunks.TILE_SIZE, 1);
+			}
+
+			if (borderL) {
+				GuiClaimedChunks.AREA.rect(dx, dy, 1, GuiClaimedChunks.TILE_SIZE);
+			}
+
+			if (borderR) {
+				GuiClaimedChunks.AREA.rect(dx + GuiClaimedChunks.TILE_SIZE - 1, dy, 1, GuiClaimedChunks.TILE_SIZE);
+			}
+		}
+	}
+
 }
