@@ -26,7 +26,6 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesConfig {
 	public static final FTBUtilitiesConfig INST = new FTBUtilitiesConfig();
 

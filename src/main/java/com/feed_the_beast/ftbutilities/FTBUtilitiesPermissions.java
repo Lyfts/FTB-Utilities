@@ -33,8 +33,8 @@ import java.util.regex.Pattern;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesPermissions {
+	public static final FTBUtilitiesPermissions INST = new FTBUtilitiesPermissions();
 	// Display //
 	public static final String DISPLAY_ADMIN_INFO = "ftbutilities.display.admin_info";
 	public static final String BADGE = "ftbutilities.badge";
@@ -118,7 +118,7 @@ public class FTBUtilitiesPermissions {
 	public static final String HEAL_OTHER = "ftbutilities.other_player.heal";
 
 	@SubscribeEvent
-	public static void registerRankConfigHandler(RegisterRankConfigHandlerEvent event) {
+	public void registerRankConfigHandler(RegisterRankConfigHandlerEvent event) {
 		if (FTBUtilitiesConfig.ranks.enabled) {
 			event.setHandler(FTBUtilitiesPermissionHandler.INSTANCE);
 		}
@@ -221,7 +221,7 @@ public class FTBUtilitiesPermissions {
 	}
 
 	@SubscribeEvent
-	public static void registerConfigs(RegisterRankConfigEvent event) {
+	public void registerConfigs(RegisterRankConfigEvent event) {
 		event.register(Rank.NODE_PARENT, new ConfigString("", Pattern.compile("^[a-z0-9\\s,]*$")),
 				new ConfigString(""));
 		event.register(Rank.NODE_DEFAULT_PLAYER, new ConfigBoolean(false), new ConfigBoolean(false));
@@ -252,7 +252,7 @@ public class FTBUtilitiesPermissions {
 	}
 
 	@SubscribeEvent
-	public static void registerCustomPermissionPrefixes(CustomPermissionPrefixesRegistryEvent event) {
+	public void registerCustomPermissionPrefixes(CustomPermissionPrefixesRegistryEvent event) {
 		event.register(Rank.NODE_COMMAND, DefaultPermissionLevel.OP,
 				"Permission for commands, if FTBUtilities command overriding is enabled. If not, this String will be inactive");
 		event.register(CLAIMS_BLOCK_EDIT_PREFIX, DefaultPermissionLevel.OP,

@@ -22,7 +22,6 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 /**
  * @author LatvianModder
  */
-// @Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesCommands
 {
 	public static void registerCommands(FMLServerStartingEvent event)

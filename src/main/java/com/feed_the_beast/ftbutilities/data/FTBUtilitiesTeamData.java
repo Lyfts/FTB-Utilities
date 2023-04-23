@@ -32,19 +32,13 @@ import net.minecraftforge.common.util.Constants;
 /**
  * @author LatvianModder
  */
-// @Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesTeamData extends TeamData {
 	public static FTBUtilitiesTeamData get(ForgeTeam team) {
 		return team.getData().get(FTBUtilities.MOD_ID);
 	}
 
 	@SubscribeEvent
-	public static void registerTeamData(ForgeTeamDataEvent event) {
-		event.register(new FTBUtilitiesTeamData(event.getTeam()));
-	}
-
-	@SubscribeEvent
-	public static void onTeamSaved(ForgeTeamSavedEvent event) {
+	public void onTeamSaved(ForgeTeamSavedEvent event) {
 		if (!ClaimedChunks.isActive()) {
 			return;
 		}
@@ -94,7 +88,7 @@ public class FTBUtilitiesTeamData extends TeamData {
 	}
 
 	@SubscribeEvent
-	public static void onTeamLoaded(ForgeTeamLoadedEvent event) {
+	public void onTeamLoaded(ForgeTeamLoadedEvent event) {
 		if (!ClaimedChunks.isActive()) {
 			return;
 		}
@@ -125,12 +119,12 @@ public class FTBUtilitiesTeamData extends TeamData {
 	}
 
 	@SubscribeEvent
-	public static void getTeamSettings(ForgeTeamConfigEvent event) {
+	public void getTeamSettings(ForgeTeamConfigEvent event) {
 		get(event.getTeam()).addConfig(event.getConfig());
 	}
 
 	@SubscribeEvent
-	public static void onTeamDeleted(ForgeTeamDeletedEvent event) {
+	public void onTeamDeleted(ForgeTeamDeletedEvent event) {
 		if (ClaimedChunks.isActive()) {
 			ClaimedChunks.instance.unclaimAllChunks(event.getTeam().getOwner(), event.getTeam(), OptionalInt.empty());
 		}
@@ -144,7 +138,7 @@ public class FTBUtilitiesTeamData extends TeamData {
 	public boolean canForceChunks = false;
 	private int cachedMaxClaimChunks, cachedMaxChunkloaderChunks;
 
-	private FTBUtilitiesTeamData(ForgeTeam t) {
+	FTBUtilitiesTeamData(ForgeTeam t) {
 		super(t);
 	}
 

@@ -2,6 +2,7 @@ package com.feed_the_beast.ftbutilities;
 
 import com.feed_the_beast.ftblib.lib.util.permission.PermissionAPI;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesLoadedChunkManager;
+import com.feed_the_beast.ftbutilities.data.FTBUtilitiesUniverseData;
 import com.feed_the_beast.ftbutilities.data.Leaderboard;
 import com.feed_the_beast.ftbutilities.data.NodeEntry;
 import com.feed_the_beast.ftbutilities.events.CustomPermissionPrefixesRegistryEvent;
@@ -72,6 +73,9 @@ public class FTBUtilitiesCommon {
 		MinecraftForge.EVENT_BUS.register(FTBUtilitiesRegistryEventHandler.INST);
 		MinecraftForge.EVENT_BUS.register(FTBUtilitiesServerEventHandler.INST);
 		MinecraftForge.EVENT_BUS.register(FTBUtilitiesWorldEventHandler.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesUniverseData.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesPermissions.INST);
+		MinecraftForge.EVENT_BUS.register(FTBUtilitiesLeaderboards.INST);
 	}
 
 	public void init() {

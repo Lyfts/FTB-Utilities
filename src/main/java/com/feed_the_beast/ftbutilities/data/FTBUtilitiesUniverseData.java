@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.feed_the_beast.ftblib.FTBLibConfig;
+import com.feed_the_beast.ftblib.events.team.ForgeTeamDataEvent;
 import com.feed_the_beast.ftblib.events.universe.UniverseClosedEvent;
 import com.feed_the_beast.ftblib.events.universe.UniverseLoadedEvent;
 import com.feed_the_beast.ftblib.events.universe.UniverseSavedEvent;
@@ -45,8 +46,8 @@ import net.minecraft.world.storage.ThreadedFileIOBase;
 /**
  * @author LatvianModder
  */
-// @Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesUniverseData {
+	public static final FTBUtilitiesUniverseData INST = new FTBUtilitiesUniverseData();
 	private static final String BADGE_URL = "https://badges.latmod.com/get?id=";
 	private static final ResourceLocation RESTART_TIMER_ID = new ResourceLocation(FTBUtilities.MOD_ID, "restart_timer");
 
@@ -77,7 +78,12 @@ public class FTBUtilitiesUniverseData {
 	}
 
 	@SubscribeEvent
-	public static void onUniversePreLoaded(UniverseLoadedEvent.Pre event) {
+	public void registerTeamData(ForgeTeamDataEvent event) {
+		event.register(new FTBUtilitiesTeamData(event.getTeam()));
+	}
+
+	@SubscribeEvent
+	public void onUniversePreLoaded(UniverseLoadedEvent.Pre event) {
 		if (FTBUtilitiesConfig.world.chunk_claiming) {
 			ClaimedChunks.instance = new ClaimedChunks(event.getUniverse());
 		}
@@ -86,13 +92,13 @@ public class FTBUtilitiesUniverseData {
 	}
 
 	@SubscribeEvent
-	public static void onUniversePostLoaded(UniverseLoadedEvent.Post event) {
+	public void onUniversePostLoaded(UniverseLoadedEvent.Post event) {
 		NBTTagCompound nbt = event.getData(FTBUtilities.MOD_ID);
 		WARPS.deserializeNBT(nbt.getCompoundTag("Warps"));
 	}
 
 	@SubscribeEvent
-	public static void onUniverseLoaded(UniverseLoadedEvent.Finished event) {
+	public void onUniverseLoaded(UniverseLoadedEvent.Finished event) {
 		long now = System.currentTimeMillis();
 		shutdownTime = 0L;
 
@@ -197,7 +203,7 @@ public class FTBUtilitiesUniverseData {
 	}
 
 	@SubscribeEvent
-	public static void onUniverseSaved(UniverseSavedEvent event) {
+	public void onUniverseSaved(UniverseSavedEvent event) {
 		if (ClaimedChunks.isActive()) {
 			ClaimedChunks.instance.processQueue();
 		}
@@ -230,7 +236,7 @@ public class FTBUtilitiesUniverseData {
 	}
 
 	@SubscribeEvent
-	public static void onUniverseClosed(UniverseClosedEvent event) {
+	public void onUniverseClosed(UniverseClosedEvent event) {
 		if (ClaimedChunks.isActive()) {
 			ClaimedChunks.instance.clear();
 			ClaimedChunks.instance = null;

@@ -18,10 +18,10 @@ import java.util.Comparator;
 /**
  * @author LatvianModder
  */
-//@Mod.EventBusSubscriber(modid = FTBUtilities.MOD_ID)
 public class FTBUtilitiesLeaderboards {
+	public static final FTBUtilitiesLeaderboards INST = new FTBUtilitiesLeaderboards();
 	@SubscribeEvent
-	public static void registerLeaderboards(LeaderboardRegistryEvent event) {
+	public void registerLeaderboards(LeaderboardRegistryEvent event) {
 		event.register(new Leaderboard.FromStat(new ResourceLocation(FTBUtilities.MOD_ID, "deaths"), StatList.deathsStat,
 				false, Leaderboard.FromStat.DEFAULT));
 		event.register(new Leaderboard.FromStat(new ResourceLocation(FTBUtilities.MOD_ID, "mob_kills"),

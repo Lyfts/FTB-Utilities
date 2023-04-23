@@ -28,6 +28,7 @@ import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemSaddle;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
@@ -141,7 +142,8 @@ public class FTBUtilitiesServerEventHandler {
 		}
 
 		main.appendSibling(text);
-		event.component.appendSibling(main);
+//		event.component.appendSibling(main);
+		event.component = new ChatComponentTranslation("translation.test.args", data.getNameForChat(player), text);
 //		event.setComponent(main);
 	}
 
