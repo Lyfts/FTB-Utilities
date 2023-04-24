@@ -14,8 +14,11 @@ import com.feed_the_beast.ftbutilities.handlers.FTBUtilitiesWorldEventHandler;
 import com.feed_the_beast.ftbutilities.net.FTBUtilitiesNetHandler;
 import com.feed_the_beast.ftbutilities.ranks.FTBUtilitiesPermissionHandler;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.eventhandler.Event;
+import cpw.mods.fml.common.eventhandler.EventBus;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -76,6 +79,8 @@ public class FTBUtilitiesCommon {
 		MinecraftForge.EVENT_BUS.register(FTBUtilitiesUniverseData.INST);
 		MinecraftForge.EVENT_BUS.register(FTBUtilitiesPermissions.INST);
 		MinecraftForge.EVENT_BUS.register(FTBUtilitiesLeaderboards.INST);
+
+		FMLCommonHandler.instance().bus().register(FTBUtilitiesServerEventHandler.INST);
 	}
 
 	public void init() {
