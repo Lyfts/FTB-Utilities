@@ -53,7 +53,6 @@ public class FTBUtilitiesWorldEventHandler {
 
 		if (FTBUtilitiesConfig.world.safe_spawn
 				&& FTBUtilitiesUniverseData.isInSpawn(MinecraftServer.getServer(), new ChunkDimPos(entity))) {
-			//TODO: is this a bad way of getting server here?
 			if (entity instanceof IMob) {
 				return false;
 			} else {
@@ -76,7 +75,7 @@ public class FTBUtilitiesWorldEventHandler {
 		List<ChunkPosition> list = new ArrayList<>(explosion.affectedBlockPositions);
 		explosion.affectedBlockPositions.clear();
 		Map<ChunkDimPos, Boolean> map = new HashMap<>();
-		final MinecraftServer server = MinecraftServer.getServer(); //TODO: maybe bad
+		final MinecraftServer server = MinecraftServer.getServer();
 
 		Function<ChunkDimPos, Boolean> func = pos -> {
 			if (pos.dim == 0 && FTBUtilitiesConfig.world.safe_spawn
