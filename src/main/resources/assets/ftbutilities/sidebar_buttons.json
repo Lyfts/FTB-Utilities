@@ -1,7 +1,7 @@
 {
 	"leaderboards": {
 		"group": "ftblib:util",
-		"icon": "minecraft:items/sign",
+		"icon": "minecraft:textures/items/sign.png",
 		"x": 170,
 		"click": "ftbutilities:leaderboards_gui",
 		"required_server_mods": ["ftbutilities"],
@@ -9,7 +9,7 @@
 	},
 	"claimed_chunks": {
 		"group": "ftblib:util",
-		"icon": "ftblib:icons/map",
+		"icon": "ftblib:textures/icons/map.png",
 		"x": 0,
 		"click": "ftbutilities:claims_gui",
 		"required_server_mods": ["ftbutilities"],
@@ -17,7 +17,7 @@
 	},
 	"trash_can": {
 		"group": "ftblib:util",
-		"icon": "ftblib:icons/bin",
+		"icon": "ftblib:textures/icons/bin.png",
 		"x": 150,
 		"click": "command:/trash_can",
 		"required_server_mods": ["ftbutilities"],
@@ -25,7 +25,7 @@
 	},
 	"heal": {
 		"group": "ftblib:cheat",
-		"icon": "ftblib:icons/heart",
+		"icon": "ftblib:textures/icons/heart.png",
 		"x": 140,
 		"click": "command:/heal",
 		"required_server_mods": ["ftbutilities"],
@@ -34,7 +34,7 @@
 	},
 	"toggle.gamemode": {
 		"group": "ftblib:cheat",
-		"icon": ["ftblib:icons/blue_button", "ftblib:textures/icons/toggle_gamemode.png"],
+		"icon": ["ftblib:textures/icons/blue_button.png", "ftblib:textures/icons/toggle_gamemode.png"],
 		"x": 100,
 		"click": "ftbutilities:toggle_gamemode",
 		"hide_with_nei": true,
@@ -42,7 +42,7 @@
 	},
 	"toggle.rain": {
 		"group": "ftblib:cheat",
-		"icon": ["ftblib:icons/blue_button", "ftblib:textures/icons/toggle_rain.png"],
+		"icon": ["ftblib:textures/icons/blue_button.png", "ftblib:textures/icons/toggle_rain.png"],
 		"x": 110,
 		"click": "command:/toggledownfall",
 		"config": true,
@@ -51,7 +51,7 @@
 	},
 	"toggle.day": {
 		"group": "ftblib:cheat",
-		"icon": ["ftblib:icons/blue_button", "ftblib:textures/icons/toggle_day.png"],
+		"icon": ["ftblib:textures/icons/blue_button.png", "ftblib:textures/icons/toggle_day.png"],
 		"x": 120,
 		"click": "ftbutilities:daytime",
 		"required_server_mods": ["ftbutilities"],
@@ -60,7 +60,7 @@
 	},
 	"toggle.night": {
 		"group": "ftblib:cheat",
-		"icon": ["ftblib:icons/blue_button", "ftblib:textures/icons/toggle_night.png"],
+		"icon": ["ftblib:textures/icons/blue_button.png", "ftblib:textures/icons/toggle_night.png"],
 		"x": 130,
 		"click": "ftbutilities:nighttime",
 		"required_server_mods": ["ftbutilities"],
