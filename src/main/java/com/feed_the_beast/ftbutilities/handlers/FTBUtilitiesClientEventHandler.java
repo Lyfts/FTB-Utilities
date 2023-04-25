@@ -7,8 +7,10 @@ import com.feed_the_beast.ftblib.lib.gui.misc.ChunkSelectorMap;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.math.Ticks;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
+import com.feed_the_beast.ftblib.lib.util.text_components.Notification;
 import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
+import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.client.FTBUtilitiesClient;
 import com.feed_the_beast.ftbutilities.client.FTBUtilitiesClientConfig;
 import com.feed_the_beast.ftbutilities.events.chunks.UpdateClientDataEvent;
@@ -28,6 +30,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 import java.util.Arrays;
@@ -240,4 +244,14 @@ public class FTBUtilitiesClientEventHandler {
 		}
 	}
 
+	@SubscribeEvent
+	public void onClientChatReceived(ClientChatReceivedEvent event) {
+		if (event.message instanceof Notification) {
+			Notification  notice = (Notification) event.message;
+			if (notice.getId().equals(FTBUtilitiesNotifications.CHUNK_CHANGED)) {
+				Minecraft.getMinecraft().ingameGUI.func_110326_a(notice.getFormattedText(), false);
+				event.message = null;
+			}
+		}
+	}
 }
