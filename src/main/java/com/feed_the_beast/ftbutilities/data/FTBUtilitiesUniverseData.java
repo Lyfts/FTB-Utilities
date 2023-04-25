@@ -42,6 +42,7 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.ThreadedFileIOBase;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * @author LatvianModder
@@ -80,6 +81,11 @@ public class FTBUtilitiesUniverseData {
 	@SubscribeEvent
 	public void registerTeamData(ForgeTeamDataEvent event) {
 		event.register(new FTBUtilitiesTeamData(event.getTeam()));
+	}
+
+	@SubscribeEvent
+	public void onCreateServerTeams(UniverseLoadedEvent.CreateServerTeams event) {
+		MinecraftForge.EVENT_BUS.register(new FTBUtilitiesTeamData(event.getUniverse().fakePlayerTeam));
 	}
 
 	@SubscribeEvent
