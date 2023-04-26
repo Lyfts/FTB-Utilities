@@ -34,8 +34,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Mod(modid = FTBUtilities.MOD_ID, name = FTBUtilities.MOD_NAME, version = FTBUtilities.VERSION, acceptableRemoteVersions = "*", dependencies = FTBLib.THIS_DEP
-//		+ ";before:" + KubeJS.MOD_ID + ";after:" + Aurora.MOD_ID)
 @Mod(
 		modid = FTBUtilities.MOD_ID,
 		name = FTBUtilities.MOD_NAME,
@@ -46,13 +44,16 @@ import java.util.List;
 public class FTBUtilities {
 	public static final String MOD_ID = "ftbutilities";
 	public static final String MOD_NAME = "FTB Utilities";
-	public static final String VERSION = "0.0.0.ftbutilities";
+	public static final String VERSION = "GRADLETOKEN_VERSION";
 	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
 	@Mod.Instance(MOD_ID)
 	public static FTBUtilities INST;
 
-	@SidedProxy(serverSide = "com.feed_the_beast.ftbutilities.FTBUtilitiesCommon", clientSide = "com.feed_the_beast.ftbutilities.client.FTBUtilitiesClient")
+	@SidedProxy(
+			serverSide = "com.feed_the_beast.ftbutilities.FTBUtilitiesCommon",
+			clientSide = "com.feed_the_beast.ftbutilities.client.FTBUtilitiesClient"
+	)
 	public static FTBUtilitiesCommon PROXY;
 
 	public static IChatComponent lang(@Nullable ICommandSender sender, String key, Object... args) {
