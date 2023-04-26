@@ -16,7 +16,7 @@ public class FTBUtilitiesClientConfig
 	public static Configuration config;
 
 	public static void init(FMLPreInitializationEvent event) {
-		config = new Configuration(new File(event.getModConfigurationDirectory() + "../local/client/ftbutilities.cfg"));
+		config = new Configuration(new File(event.getModConfigurationDirectory() + "/../local/client/ftbutilities.cfg"));
 		sync();
 	}
 
@@ -30,6 +30,7 @@ public class FTBUtilitiesClientConfig
 		general.shutdown_timer_start = config.get(Configuration.CATEGORY_GENERAL, "shutdown_timer_start", "1m", "When will it start to show the shutdown timer.").getString();
 		general.button_daytime = config.get(Configuration.CATEGORY_GENERAL, "button_daytime", 6000, "", 0, 23999).getInt();
 		general.button_nighttime = config.get(Configuration.CATEGORY_GENERAL, "button_nighttime", 18000, "", 0, 239999).getInt();
+		config.save();
 
 		return true;
 	}
