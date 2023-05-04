@@ -60,7 +60,7 @@ public class FTBUtilitiesConfig {
 		afk.log_afk = config.get(AFK, "log_afk", false, "Will print in console when someone goes/comes back from AFK.").getBoolean();
 
 		chat.add_nickname_tilde = config.get(CHAT, "add_nickname_tilde", false, "Adds ~ to player names that have changed nickname to prevent trolling.").getBoolean();
-		chat.replace_tab_names = config.get(CHAT, "replace_tab_names", true, "Disable this for some plugin compat. Not that they are supported but sometimes this is all that's needed.").getBoolean();
+		chat.replace_tab_names = config.get(CHAT, "replace_tab_names", false, "NOT IMPLEMENTED\nDisable this for some plugin compat. Not that they are supported but sometimes this is all that's needed.").getBoolean();
 
 		commands.warp = config.get(COMMANDS, "warp", true).getBoolean();
 		commands.home = config.get(COMMANDS, "home", true).getBoolean();

@@ -209,9 +209,9 @@ public class FTBUtilitiesServerEventHandler {
 
 						FTBUtilities.LOGGER.info(player.getDisplayName() + (isAFK ? " is now AFK" : " is no longer AFK"));
 
-						if (FTBUtilitiesConfig.chat.replace_tab_names) {
-							new MessageUpdateTabName(player).sendToAll();
-						}
+//						if (FTBUtilitiesConfig.chat.replace_tab_names) {
+//							new MessageUpdateTabName(player).sendToAll();
+//						}
 					}
 
 					if (playerToKickForAfk == null) {

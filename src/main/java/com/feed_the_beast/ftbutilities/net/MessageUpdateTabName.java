@@ -11,16 +11,20 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 
+import net.minecraft.client.gui.GuiPlayerInfo;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
 
+import java.util.List;
 import java.util.UUID;
 
 public class MessageUpdateTabName extends MessageToClient {
 	private UUID playerId;
+	private String name;
 	private IChatComponent displayName;
 	private boolean afk, rec;
 
@@ -29,6 +33,7 @@ public class MessageUpdateTabName extends MessageToClient {
 
 	public MessageUpdateTabName(EntityPlayerMP player) {
 		playerId = player.getUniqueID();
+		name = player.getDisplayName();
 		displayName = new ChatComponentText(player.getDisplayName());
 		afk = (System.currentTimeMillis() - player.func_154331_x()) >= FTBUtilitiesConfig.afk
 				.getNotificationTimer();
@@ -43,6 +48,7 @@ public class MessageUpdateTabName extends MessageToClient {
 	@Override
 	public void writeData(DataOut data) {
 		data.writeUUID(playerId);
+		data.writeString(name);
 		data.writeTextComponent(displayName);
 		data.writeBoolean(afk);
 		data.writeBoolean(rec);
@@ -51,6 +57,7 @@ public class MessageUpdateTabName extends MessageToClient {
 	@Override
 	public void readData(DataIn data) {
 		playerId = data.readUUID();
+		name = data.readString();
 		displayName = data.readTextComponent();
 		afk = data.readBoolean();
 		rec = data.readBoolean();
@@ -59,13 +66,20 @@ public class MessageUpdateTabName extends MessageToClient {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void onMessage() {
+		// ignore this for now
 		return;
-//		NetworkPlayerInfo info = Minecraft.getMinecraft().thePlayer.connection.getPlayerInfo(playerId);
-
-//		if (info == null) {
+//		List<GuiPlayerInfo> list = Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList;
+//		int i;
+//		for (i = 0; i < list.size(); i++) {
+//			if (name.equals(list.get(i).name)) {
+//				break;
+//			}
+//		}
+//
+//		if (i >= list.size()) {
 //			return;
 //		}
-
+//
 //		IChatComponent component = new ChatComponentText("");
 //
 //		if (rec) {
@@ -86,6 +100,11 @@ public class MessageUpdateTabName extends MessageToClient {
 //		}
 //
 //		component.appendSibling(displayName);
-//		info.setDisplayName(component);
+//		list.set(i, new GuiPlayerInfo(component.getFormattedText()));
+
+		// This doesn't work because GuiPlayerInfo uses the name to keep track of which entries to keep.
+		// If we modify the name, then it won't be removed when the player logs out.
+		// This would have to modify how the name is displayed to work properly, or keep track of the modification to
+		// remove the player properly upon logout.
 	}
 }
