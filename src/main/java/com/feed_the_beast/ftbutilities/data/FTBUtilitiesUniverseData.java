@@ -227,7 +227,7 @@ public class FTBUtilitiesUniverseData {
 
 			ThreadedFileIOBase.threadedIOInstance.queueIO(() -> {
 				try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
-						FileUtils.newFile(new File(event.getUniverse().server.getFolderName(), "logs/world.log")),
+						FileUtils.newFile(event.getUniverse().server.getFile("logs/world.log")),
 						true)))) {
 					for (String s : worldLogCopy) {
 						out.println(s);

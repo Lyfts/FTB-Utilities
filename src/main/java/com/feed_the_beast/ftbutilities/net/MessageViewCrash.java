@@ -44,7 +44,7 @@ public class MessageViewCrash extends MessageToServer {
 	public void onMessage(EntityPlayerMP player) {
 		if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_VIEW)) {
 			try {
-				File file = new File(player.mcServer.getFolderName(), "crash-reports/crash-" + id + ".txt");
+				File file = player.mcServer.getFile("crash-reports/crash-" + id + ".txt");
 
 				if (file.exists()) {
 					new MessageViewCrashResponse(file.getName(), DataReader.get(file).stringList()).sendTo(player);

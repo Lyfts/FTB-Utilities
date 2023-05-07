@@ -14,7 +14,7 @@ public class CmdShutdown extends CmdBase {
 	}
 
 	public static void shutdown(MinecraftServer server) {
-		FileUtils.newFile(new File(server.getFolderName(), "autostart.stamp"));
+		FileUtils.newFile(server.getFile("autostart.stamp"));
 		server.initiateShutdown();
 	}
 

@@ -49,9 +49,7 @@ public class FTBUtilitiesRegistryEventHandler {
 
 					@Override
 					public void onAction(ForgePlayer player, NBTTagCompound data) {
-						new MessageViewCrashList(
-								new File(player.team.universe.server.getFolderName(), "crash-reports"))
-								.sendTo(player.getPlayer());
+						new MessageViewCrashList(player.team.universe.server.getFile("crash-reports")).sendTo(player.getPlayer());
 					}
 				});
 

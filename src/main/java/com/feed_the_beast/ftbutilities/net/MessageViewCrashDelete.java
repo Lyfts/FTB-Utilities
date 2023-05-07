@@ -42,7 +42,7 @@ public class MessageViewCrashDelete extends MessageToServer {
 	@Override
 	public void onMessage(EntityPlayerMP player) {
 		if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_VIEW)) {
-			File folder = new File(player.mcServer.getFolderName(), "crash-reports");
+			File folder = player.mcServer.getFile("crash-reports");
 
 			if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_DELETE)) {
 				try {

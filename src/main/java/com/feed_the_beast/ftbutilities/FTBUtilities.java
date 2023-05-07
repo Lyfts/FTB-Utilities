@@ -95,10 +95,8 @@ public class FTBUtilities {
 	public void onServerStarted(FMLServerStartedEvent event) {
 		if (Ranks.isActive()) {
 			Ranks.INSTANCE.commands.clear();
-			FileUtils.deleteSafe(new File(Ranks.INSTANCE.universe.server.getFolderName(),
-					"local/ftbutilities/all_permissions.html"));
-			FileUtils.deleteSafe(new File(Ranks.INSTANCE.universe.server.getFolderName(),
-					"local/ftbutilities/all_permissions_full_list.txt"));
+			FileUtils.deleteSafe(Ranks.INSTANCE.universe.server.getFile("local/ftbutilities/all_permissions.html"));
+			FileUtils.deleteSafe(Ranks.INSTANCE.universe.server.getFile("local/ftbutilities/all_permissions_full_list.txt"));
 
 			boolean spongeLoaded = Loader.isModLoaded("spongeforge");
 

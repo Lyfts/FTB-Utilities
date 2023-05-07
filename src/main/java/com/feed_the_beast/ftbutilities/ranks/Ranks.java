@@ -76,7 +76,7 @@ public class Ranks {
 
 		boolean save = false;
 
-		ranksFile = new File(universe.server.getFolderName(), "local/ftbutilities/ranks.txt");
+		ranksFile = universe.server.getFile("local/ftbutilities/ranks.txt");
 
 		if (!ranksFile.exists()) {
 			Rank pRank = new Rank(this, "player");
@@ -197,7 +197,7 @@ public class Ranks {
 			}
 		}
 
-		File oldPlayerRanksFile = new File(universe.server.getFolderName(), "local/ftbutilities/player_ranks.txt");
+		File oldPlayerRanksFile = universe.server.getFile("local/ftbutilities/player_ranks.txt");
 
 		if (oldPlayerRanksFile.exists()) {
 			for (String s : DataReader.get(oldPlayerRanksFile).safeStringList()) {
@@ -224,7 +224,7 @@ public class Ranks {
 			save = true;
 		}
 
-		File badgeFile = new File(universe.server.getFolderName(), "local/ftbutilities/server_badges.txt");
+		File badgeFile = universe.server.getFile("local/ftbutilities/server_badges.txt");
 
 		if (badgeFile.exists()) {
 			for (String s : DataReader.get(badgeFile).safeStringList()) {
@@ -247,7 +247,7 @@ public class Ranks {
 			save = true;
 		}
 
-		playersFile = new File(universe.server.getFolderName(), "local/ftbutilities/players.txt");
+		playersFile = universe.server.getFile("local/ftbutilities/players.txt");
 
 		currentRank = null;
 		lastComment = "";
