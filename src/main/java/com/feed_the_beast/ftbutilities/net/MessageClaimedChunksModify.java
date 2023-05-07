@@ -77,37 +77,42 @@ public class MessageClaimedChunksModify extends MessageToServer
 			return;
 		}
 
-		for (ChunkCoordIntPair pos0 : chunks)
-		{
-			ChunkDimPos pos = new ChunkDimPos(pos0, player.dimension);
-
-			switch (action)
-			{
-				case CLAIM:
-					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_CLAIM))
-					{
+		boolean jump = true;
+		switch (action) {
+			case LOAD:
+				jump = false;
+			case CLAIM:
+				for (ChunkCoordIntPair pair : chunks) {
+					ChunkDimPos pos = new ChunkDimPos(pair, player.dimension);
+					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_CLAIM)) {
 						ClaimedChunks.instance.claimChunk(p, pos);
 					}
-					break;
-				case UNCLAIM:
-					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNCLAIM))
-					{
-						ClaimedChunks.instance.unclaimChunk(p, pos);
-					}
-					break;
-				case LOAD:
-					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_LOAD))
-					{
+				}
+				if (jump) break;
+				ClaimedChunks.instance.processQueue();
+				for (ChunkCoordIntPair pair : chunks) {
+					ChunkDimPos pos = new ChunkDimPos(pair, player.dimension);
+					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_LOAD)) {
 						ClaimedChunks.instance.loadChunk(p, p.team, pos);
 					}
-					break;
-				case UNLOAD:
-					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNLOAD))
-					{
+				}
+				break;
+			case UNCLAIM:
+				for (ChunkCoordIntPair pair : chunks) {
+					ChunkDimPos pos = new ChunkDimPos(pair, player.dimension);
+					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNCLAIM)) {
+						ClaimedChunks.instance.unclaimChunk(p, pos);
+					}
+				}
+				break;
+			case UNLOAD:
+				for (ChunkCoordIntPair pair : chunks) {
+					ChunkDimPos pos = new ChunkDimPos(pair, player.dimension);
+					if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNLOAD)) {
 						ClaimedChunks.instance.unloadChunk(p, pos);
 					}
-					break;
-			}
+				}
+				break;
 		}
 	}
 }

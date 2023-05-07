@@ -75,6 +75,10 @@ public class GuiClaimedChunks extends GuiChunkSelectorBase {
 		boolean claim = !isShiftKeyDown();
 		boolean flag = button.isLeft();
 
+		if (isCtrlKeyDown()) {
+			blockMode = true;
+		}
+
 		if (flag) {
 			return claim ? MessageClaimedChunksModify.CLAIM : MessageClaimedChunksModify.LOAD;
 		} else {
