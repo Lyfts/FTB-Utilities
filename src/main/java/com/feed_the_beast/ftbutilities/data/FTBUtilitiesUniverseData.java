@@ -33,6 +33,7 @@ import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.ranks.Ranks;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -114,7 +115,7 @@ public class FTBUtilitiesUniverseData {
 			Calendar calendar = Calendar.getInstance();
 			int currentTime = calendar.get(Calendar.HOUR_OF_DAY) * 3600 + calendar.get(Calendar.MINUTE) * 60
 					+ calendar.get(Calendar.SECOND);
-			List<Integer> times = new ArrayList<>(FTBUtilitiesConfig.auto_shutdown.times.length);
+			IntArrayList times = new IntArrayList(FTBUtilitiesConfig.auto_shutdown.times.length);
 
 			for (String s0 : FTBUtilitiesConfig.auto_shutdown.times) {
 				try {

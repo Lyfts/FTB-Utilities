@@ -4,6 +4,9 @@ import com.feed_the_beast.ftblib.lib.EnumTeamColor;
 import com.feed_the_beast.ftblib.lib.io.Bits;
 import com.feed_the_beast.ftblib.lib.io.DataIn;
 import com.feed_the_beast.ftblib.lib.io.DataOut;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
 import net.minecraft.util.IChatComponent;
 
 import java.util.HashMap;
@@ -39,7 +42,7 @@ public class ClientClaimedChunks {
 		public EnumTeamColor color;
 		public IChatComponent nameComponent;
 		public boolean isAlly;
-		public final Map<Integer, ChunkData> chunks = new HashMap<>();
+		public final Int2ObjectMap<ChunkData> chunks = new Int2ObjectOpenHashMap<>();
 		public Object shapeProperties;
 
 		public Team(short id) {

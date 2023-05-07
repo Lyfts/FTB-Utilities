@@ -3,5 +3,5 @@
 dependencies {
     api("com.github.GTNewHorizons:FTB-Library")
     compileOnly("com.github.GTNewHorizons:FTB-Backups")
-    api("it.unimi.dsi:fastutil:8.5.12")
+    shadowCompile("it.unimi.dsi:fastutil:8.5.12")
 }

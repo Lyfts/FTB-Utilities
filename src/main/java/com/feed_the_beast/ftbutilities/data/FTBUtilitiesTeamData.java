@@ -1,13 +1,6 @@
 package com.feed_the_beast.ftbutilities.data;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.Set;
-
 import com.feed_the_beast.ftblib.events.team.ForgeTeamConfigEvent;
-import com.feed_the_beast.ftblib.events.team.ForgeTeamDataEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamDeletedEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamLoadedEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamSavedEvent;
@@ -21,6 +14,8 @@ import com.feed_the_beast.ftblib.lib.util.FileUtils;
 import com.feed_the_beast.ftblib.lib.util.NBTUtils;
 import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.nbt.NBTTagCompound;
@@ -28,6 +23,11 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraftforge.common.util.Constants;
+
+import java.io.File;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Set;
 
 /**
  * @author LatvianModder
@@ -45,7 +45,7 @@ public class FTBUtilitiesTeamData extends TeamData {
 
 		NBTTagCompound nbt = new NBTTagCompound();
 
-		HashMap<Integer, NBTTagList> claimedChunks = new HashMap<>();
+		Int2ObjectMap<NBTTagList> claimedChunks = new Int2ObjectOpenHashMap<>();
 
 		for (ClaimedChunk chunk : ClaimedChunks.instance.getTeamChunks(event.getTeam(), OptionalInt.empty())) {
 			ChunkDimPos pos = chunk.getPos();
