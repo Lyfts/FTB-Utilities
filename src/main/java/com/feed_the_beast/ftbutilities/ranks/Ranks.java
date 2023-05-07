@@ -600,4 +600,16 @@ public class Ranks {
 			rank.clearCache();
 		}
 	}
+
+	public static List<String> matchPossibleNodes(String last, Collection<String> nodes) {
+		Set<String> s = new HashSet<>();
+		for (String node : nodes) {
+			if (node.startsWith(last)) {
+				int i;
+				for (i = last.length(); i < node.length() && node.charAt(i) != '.'; i++) {}
+				s.add(node.substring(0, i));
+			}
+		}
+		return new ArrayList<>(s);
+	}
 }

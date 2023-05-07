@@ -43,7 +43,7 @@ public class CmdSetPermission extends CmdBase {
 					? getListOfStringsFromIterableMatchingLastWord(args, Ranks.INSTANCE.getRankNames(false))
 					: Collections.emptyList();
 		} else if (args.length == 2) {
-			return getListOfStringsFromIterableMatchingLastWord(args,
+			return Ranks.matchPossibleNodes(args[args.length - 1],
 					Ranks.isActive() ? Ranks.INSTANCE.getPermissionNodes()
 							: FTBUtilitiesPermissionHandler.INSTANCE.getRegisteredNodes());
 		} else if (args.length == 3) {

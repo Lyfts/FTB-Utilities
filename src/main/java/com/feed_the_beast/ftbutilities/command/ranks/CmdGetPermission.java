@@ -33,7 +33,7 @@ public class CmdGetPermission extends CmdBase {
 	@Override
 	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 2) {
-			return getListOfStringsFromIterableMatchingLastWord(args,
+			return Ranks.matchPossibleNodes(args[args.length - 1],
 					Ranks.isActive() ? Ranks.INSTANCE.getPermissionNodes()
 							: FTBUtilitiesPermissionHandler.INSTANCE.getRegisteredNodes());
 		}
