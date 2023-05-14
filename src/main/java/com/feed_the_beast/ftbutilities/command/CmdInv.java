@@ -5,69 +5,73 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CmdTreeBase;
 import com.feed_the_beast.ftblib.lib.command.CmdTreeHelp;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-
 public class CmdInv extends CmdTreeBase {
-	public static class CmdView extends CmdBase {
-		public CmdView() {
-			super("view", Level.OP);
-		}
 
-		@Override
-		public List<String> getCommandAliases() {
-			return Collections.singletonList("edit");
-		}
+    public static class CmdView extends CmdBase {
 
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return index == 0;
-		}
+        public CmdView() {
+            super("view", Level.OP);
+        }
 
-		@Override
-		public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-			checkArgs(sender, args, 1);
-			EntityPlayerMP self = getCommandSenderAsPlayer(sender);
-			EntityPlayerMP other = CommandUtils.getForgePlayer(sender, args[0]).getCommandPlayer(sender);
-			self.displayGUIChest(new InvSeeInventory(other.inventory, other));
-		}
-	}
+        @Override
+        public List<String> getCommandAliases() {
+            return Collections.singletonList("edit");
+        }
 
-	public static class CmdDisableRightClick extends CmdBase {
-		public CmdDisableRightClick() {
-			super("disable_right_click", Level.OP);
-		}
+        @Override
+        public boolean isUsernameIndex(String[] args, int index) {
+            return index == 0;
+        }
 
-		@Override
-		public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-			LinkedHashSet<String> list = new LinkedHashSet<>(
-					Arrays.asList(FTBUtilitiesConfig.world.disabled_right_click_items));
-			ItemStack stack = getCommandSenderAsPlayer(sender).getHeldItem();
-			String s = stack.getItem().getUnlocalizedName() + (stack.getHasSubtypes() ? ("@" + stack.getItemDamage()) : "");
+        @Override
+        public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+            checkArgs(sender, args, 1);
+            EntityPlayerMP self = getCommandSenderAsPlayer(sender);
+            EntityPlayerMP other = CommandUtils.getForgePlayer(sender, args[0]).getCommandPlayer(sender);
+            self.displayGUIChest(new InvSeeInventory(other.inventory, other));
+        }
+    }
 
-			if (list.contains(s)) {
-				list.remove(s);
-			} else {
-				list.add(s);
-			}
+    public static class CmdDisableRightClick extends CmdBase {
 
-			FTBUtilitiesConfig.world.disabled_right_click_items = list.toArray(new String[0]);
-			FTBUtilitiesConfig.sync();
-		}
-	}
+        public CmdDisableRightClick() {
+            super("disable_right_click", Level.OP);
+        }
 
-	public CmdInv() {
-		super("inv");
-		addSubcommand(new CmdView());
-		addSubcommand(new CmdDisableRightClick());
-		addSubcommand(new CmdTreeHelp(this));
-	}
+        @Override
+        public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+            LinkedHashSet<String> list = new LinkedHashSet<>(
+                    Arrays.asList(FTBUtilitiesConfig.world.disabled_right_click_items));
+            ItemStack stack = getCommandSenderAsPlayer(sender).getHeldItem();
+            String s = stack.getItem().getUnlocalizedName()
+                    + (stack.getHasSubtypes() ? ("@" + stack.getItemDamage()) : "");
+
+            if (list.contains(s)) {
+                list.remove(s);
+            } else {
+                list.add(s);
+            }
+
+            FTBUtilitiesConfig.world.disabled_right_click_items = list.toArray(new String[0]);
+            FTBUtilitiesConfig.sync();
+        }
+    }
+
+    public CmdInv() {
+        super("inv");
+        addSubcommand(new CmdView());
+        addSubcommand(new CmdDisableRightClick());
+        addSubcommand(new CmdTreeHelp(this));
+    }
 }

@@ -9,93 +9,80 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import com.feed_the_beast.ftblib.lib.math.BlockDimPos;
 import com.feed_the_beast.ftblib.lib.util.INBTSerializable;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 
-import net.minecraft.nbt.NBTTagCompound;
-
 /**
  * @author LatvianModder
  */
-public final class BlockDimPosStorage implements INBTSerializable<NBTTagCompound>
-{
-	private final Map<String, BlockDimPos> map = new HashMap<>();
-	private final List<String> names = new ArrayList<>();
+public final class BlockDimPosStorage implements INBTSerializable<NBTTagCompound> {
 
-	public Collection<String> list()
-	{
-		return names;
-	}
+    private final Map<String, BlockDimPos> map = new HashMap<>();
+    private final List<String> names = new ArrayList<>();
 
-	@Nullable
-	public BlockDimPos get(String s)
-	{
-		return map.get(s);
-	}
+    public Collection<String> list() {
+        return names;
+    }
 
-	public boolean set(String name, @Nullable BlockDimPos pos)
-	{
-		if (pos == null)
-		{
-			if (map.remove(name) != null)
-			{
-				names.remove(name);
-				return true;
-			}
+    @Nullable
+    public BlockDimPos get(String s) {
+        return map.get(s);
+    }
 
-			return false;
-		}
+    public boolean set(String name, @Nullable BlockDimPos pos) {
+        if (pos == null) {
+            if (map.remove(name) != null) {
+                names.remove(name);
+                return true;
+            }
 
-		if (map.put(name, pos.copy()) == null)
-		{
-			names.add(name);
-			names.sort(StringUtils.IGNORE_CASE_COMPARATOR);
-		}
+            return false;
+        }
 
-		return false;
-	}
+        if (map.put(name, pos.copy()) == null) {
+            names.add(name);
+            names.sort(StringUtils.IGNORE_CASE_COMPARATOR);
+        }
 
-	public boolean isEmpty()
-	{
-		return map.isEmpty();
-	}
+        return false;
+    }
 
-	public int size()
-	{
-		return map.size();
-	}
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
 
-	@Override
-	public NBTTagCompound serializeNBT()
-	{
-		NBTTagCompound nbt = new NBTTagCompound();
+    public int size() {
+        return map.size();
+    }
 
-		for (Map.Entry<String, BlockDimPos> entry : map.entrySet())
-		{
-			nbt.setIntArray(entry.getKey(), entry.getValue().toIntArray());
-		}
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound nbt = new NBTTagCompound();
 
-		return nbt;
-	}
+        for (Map.Entry<String, BlockDimPos> entry : map.entrySet()) {
+            nbt.setIntArray(entry.getKey(), entry.getValue().toIntArray());
+        }
 
-	@Override
-	public void deserializeNBT(NBTTagCompound nbt)
-	{
-		map.clear();
-		names.clear();
+        return nbt;
+    }
 
-		for (String name : (Set<String>) nbt.func_150296_c())
-		{
-			BlockDimPos pos = BlockDimPos.fromIntArray(nbt.getIntArray(name));
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt) {
+        map.clear();
+        names.clear();
 
-			if (pos != null)
-			{
-				map.put(name, pos);
-			}
-		}
+        for (String name : (Set<String>) nbt.func_150296_c()) {
+            BlockDimPos pos = BlockDimPos.fromIntArray(nbt.getIntArray(name));
 
-		names.addAll(map.keySet());
-		names.sort(StringUtils.IGNORE_CASE_COMPARATOR);
-	}
+            if (pos != null) {
+                map.put(name, pos);
+            }
+        }
+
+        names.addAll(map.keySet());
+        names.sort(StringUtils.IGNORE_CASE_COMPARATOR);
+    }
 }

@@ -5,38 +5,31 @@ import java.util.Objects;
 /**
  * @author LatvianModder
  */
-public final class TicketKey
-{
-	public final int dimension;
-	public final String teamId;
+public final class TicketKey {
 
-	public TicketKey(int dim, String team)
-	{
-		dimension = dim;
-		teamId = team;
-	}
+    public final int dimension;
+    public final String teamId;
 
-	public String toString()
-	{
-		return teamId + '@' + dimension;
-	}
+    public TicketKey(int dim, String team) {
+        dimension = dim;
+        teamId = team;
+    }
 
-	public int hashCode()
-	{
-		return Objects.hash(dimension, teamId);
-	}
+    public String toString() {
+        return teamId + '@' + dimension;
+    }
 
-	public boolean equals(Object o)
-	{
-		if (o == this)
-		{
-			return true;
-		}
-		else if (o != null && o.getClass() == TicketKey.class)
-		{
-			TicketKey key = (TicketKey) o;
-			return dimension == key.dimension && teamId.equals(key.teamId);
-		}
-		return false;
-	}
+    public int hashCode() {
+        return Objects.hash(dimension, teamId);
+    }
+
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (o != null && o.getClass() == TicketKey.class) {
+            TicketKey key = (TicketKey) o;
+            return dimension == key.dimension && teamId.equals(key.teamId);
+        }
+        return false;
+    }
 }

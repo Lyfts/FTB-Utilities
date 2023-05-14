@@ -1,5 +1,17 @@
 package com.feed_the_beast.ftbutilities.handlers;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.stats.StatList;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+
 import com.feed_the_beast.ftblib.events.client.CustomClickEvent;
 import com.feed_the_beast.ftblib.lib.EnumTeamColor;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
@@ -23,220 +35,219 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.stats.StatList;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author LatvianModder
  */
 public class FTBUtilitiesClientEventHandler {
-	public static final FTBUtilitiesClientEventHandler INST = new FTBUtilitiesClientEventHandler();
-	private static final Map<UUID, Icon> BADGE_CACHE = new HashMap<>();
-	public static long shutdownTime = 0L;
-	public static int currentPlaytime = 0;
 
-	public static void readSyncData(NBTTagCompound nbt) {
-		shutdownTime = System.currentTimeMillis() + nbt.getLong("ShutdownTime");
-	}
+    public static final FTBUtilitiesClientEventHandler INST = new FTBUtilitiesClientEventHandler();
+    private static final Map<UUID, Icon> BADGE_CACHE = new HashMap<>();
+    public static long shutdownTime = 0L;
+    public static int currentPlaytime = 0;
 
-	public static Icon getBadge(UUID id) {
-		Icon tex = BADGE_CACHE.get(id);
+    public static void readSyncData(NBTTagCompound nbt) {
+        shutdownTime = System.currentTimeMillis() + nbt.getLong("ShutdownTime");
+    }
 
-		if (tex == null) {
-			tex = Icon.EMPTY;
-			BADGE_CACHE.put(id, tex);
-			new MessageRequestBadge(id).sendToServer();
-		}
+    public static Icon getBadge(UUID id) {
+        Icon tex = BADGE_CACHE.get(id);
 
-		return tex;
-	}
+        if (tex == null) {
+            tex = Icon.EMPTY;
+            BADGE_CACHE.put(id, tex);
+            new MessageRequestBadge(id).sendToServer();
+        }
 
-	public static void setBadge(UUID id, String url) {
-		BADGE_CACHE.put(id, Icon.getIcon(url));
-	}
+        return tex;
+    }
 
-	@SubscribeEvent
-	public void onClientDisconnected(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
-		BADGE_CACHE.clear();
-		shutdownTime = 0L;
-	}
+    public static void setBadge(UUID id, String url) {
+        BADGE_CACHE.put(id, Icon.getIcon(url));
+    }
 
-	@SubscribeEvent
-	public void onDebugInfoEvent(RenderGameOverlayEvent.Text event) {
-		if (Minecraft.getMinecraft().gameSettings.showDebugInfo) {
-			return;
-		}
+    @SubscribeEvent
+    public void onClientDisconnected(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        BADGE_CACHE.clear();
+        shutdownTime = 0L;
+    }
 
-		if (shutdownTime > 0L && FTBUtilitiesClientConfig.general.show_shutdown_timer) {
-			long timeLeft = Math.max(0L, shutdownTime - System.currentTimeMillis());
+    @SubscribeEvent
+    public void onDebugInfoEvent(RenderGameOverlayEvent.Text event) {
+        if (Minecraft.getMinecraft().gameSettings.showDebugInfo) {
+            return;
+        }
 
-			if (timeLeft > 0L && timeLeft <= FTBUtilitiesClientConfig.general.getShowShutdownTimer()) {
-				event.left.add(EnumChatFormatting.DARK_RED
-						+ I18n.format("ftbutilities.lang.timer.shutdown", StringUtils.getTimeString(timeLeft)));
-			}
-		}
+        if (shutdownTime > 0L && FTBUtilitiesClientConfig.general.show_shutdown_timer) {
+            long timeLeft = Math.max(0L, shutdownTime - System.currentTimeMillis());
 
-		if (FTBUtilitiesConfig.world.show_playtime) {
-			event.left
-					.add(StatList.minutesPlayedStat.func_150951_e().getUnformattedText() + ": " + Ticks
-							.get(Minecraft.getMinecraft().thePlayer.getStatFileWriter().writeStat(StatList.minutesPlayedStat))
-							.toTimeString());
-		}
-	}
+            if (timeLeft > 0L && timeLeft <= FTBUtilitiesClientConfig.general.getShowShutdownTimer()) {
+                event.left.add(
+                        EnumChatFormatting.DARK_RED
+                                + I18n.format("ftbutilities.lang.timer.shutdown", StringUtils.getTimeString(timeLeft)));
+            }
+        }
 
-	@SubscribeEvent
-	public void onKeyEvent(InputEvent.KeyInputEvent event) {
-		if (FTBUtilitiesClient.KEY_NBT.isPressed()) {
-			MessageEditNBTRequest.editNBT();
-		}
+        if (FTBUtilitiesConfig.world.show_playtime) {
+            event.left.add(
+                    StatList.minutesPlayedStat.func_150951_e().getUnformattedText() + ": "
+                            + Ticks.get(
+                                    Minecraft.getMinecraft().thePlayer.getStatFileWriter()
+                                            .writeStat(StatList.minutesPlayedStat))
+                                    .toTimeString());
+        }
+    }
 
-		if (FTBUtilitiesClient.KEY_TRASH.isPressed()) {
-			ClientUtils.execClientCommand("/trash_can");
-		}
-	}
+    @SubscribeEvent
+    public void onKeyEvent(InputEvent.KeyInputEvent event) {
+        if (FTBUtilitiesClient.KEY_NBT.isPressed()) {
+            MessageEditNBTRequest.editNBT();
+        }
 
-	@SubscribeEvent
-	public void onCustomClick(CustomClickEvent event) {
-		if (event.getID().getResourceDomain().equals(FTBUtilities.MOD_ID)) {
-			switch (event.getID().getResourcePath()) {
-				case "toggle_gamemode":
-					ClientUtils.execClientCommand("/gamemode "
-							+ (Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode ? "survival" : "creative"));
-					break;
-				case "daytime":
-					long addDay = (24000L - (Minecraft.getMinecraft().theWorld.getWorldTime() % 24000L)
-							+ FTBUtilitiesClientConfig.general.button_daytime) % 24000L;
+        if (FTBUtilitiesClient.KEY_TRASH.isPressed()) {
+            ClientUtils.execClientCommand("/trash_can");
+        }
+    }
 
-					if (addDay != 0L) {
-						ClientUtils.execClientCommand("/time add " + addDay);
-					}
+    @SubscribeEvent
+    public void onCustomClick(CustomClickEvent event) {
+        if (event.getID().getResourceDomain().equals(FTBUtilities.MOD_ID)) {
+            switch (event.getID().getResourcePath()) {
+                case "toggle_gamemode":
+                    ClientUtils.execClientCommand(
+                            "/gamemode " + (Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode ? "survival"
+                                    : "creative"));
+                    break;
+                case "daytime":
+                    long addDay = (24000L - (Minecraft.getMinecraft().theWorld.getWorldTime() % 24000L)
+                            + FTBUtilitiesClientConfig.general.button_daytime) % 24000L;
 
-					break;
-				case "nighttime":
-					long addNight = (24000L - (Minecraft.getMinecraft().theWorld.getWorldTime() % 24000L)
-							+ FTBUtilitiesClientConfig.general.button_nighttime) % 24000L;
+                    if (addDay != 0L) {
+                        ClientUtils.execClientCommand("/time add " + addDay);
+                    }
 
-					if (addNight != 0L) {
-						ClientUtils.execClientCommand("/time add " + addNight);
-					}
+                    break;
+                case "nighttime":
+                    long addNight = (24000L - (Minecraft.getMinecraft().theWorld.getWorldTime() % 24000L)
+                            + FTBUtilitiesClientConfig.general.button_nighttime) % 24000L;
 
-					break;
-				case "claims_gui":
-					GuiClaimedChunks.instance = new GuiClaimedChunks();
-					GuiClaimedChunks.instance.openGui();
-					break;
-				case "leaderboards_gui":
-					new MessageLeaderboardList().sendToServer();
-					break;
-			}
+                    if (addNight != 0L) {
+                        ClientUtils.execClientCommand("/time add " + addNight);
+                    }
 
-			event.setCanceled(true);
-		}
-	}
+                    break;
+                case "claims_gui":
+                    GuiClaimedChunks.instance = new GuiClaimedChunks();
+                    GuiClaimedChunks.instance.openGui();
+                    break;
+                case "leaderboards_gui":
+                    new MessageLeaderboardList().sendToServer();
+                    break;
+            }
 
-	@SubscribeEvent
-	public void onClientWorldTick(TickEvent.ClientTickEvent event) {
-		Minecraft mc = Minecraft.getMinecraft();
+            event.setCanceled(true);
+        }
+    }
 
-		if (event.phase == TickEvent.Phase.START && mc.theWorld != null
-				&& mc.theWorld.provider.dimensionId == FTBUtilitiesConfig.world.spawn_dimension) {
-			if (FTBUtilitiesConfig.world.forced_spawn_dimension_time != -1) {
-				mc.theWorld.setWorldTime(FTBUtilitiesConfig.world.forced_spawn_dimension_time);
-			}
+    @SubscribeEvent
+    public void onClientWorldTick(TickEvent.ClientTickEvent event) {
+        Minecraft mc = Minecraft.getMinecraft();
 
-			if (FTBUtilitiesConfig.world.forced_spawn_dimension_weather != -1) {
-				mc.theWorld.getWorldInfo().setRaining(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 1);
-				mc.theWorld.getWorldInfo().setThundering(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 2);
-			}
-		}
-	}
+        if (event.phase == TickEvent.Phase.START && mc.theWorld != null
+                && mc.theWorld.provider.dimensionId == FTBUtilitiesConfig.world.spawn_dimension) {
+            if (FTBUtilitiesConfig.world.forced_spawn_dimension_time != -1) {
+                mc.theWorld.setWorldTime(FTBUtilitiesConfig.world.forced_spawn_dimension_time);
+            }
 
-	@SubscribeEvent
-	public void onChunkDataUpdate(UpdateClientDataEvent event) {
-		MessageClaimedChunksUpdate m = event.getMessage();
-		GuiClaimedChunks.claimedChunks = m.claimedChunks;
-		GuiClaimedChunks.loadedChunks = m.loadedChunks;
-		GuiClaimedChunks.maxClaimedChunks = m.maxClaimedChunks;
-		GuiClaimedChunks.maxLoadedChunks = m.maxLoadedChunks;
-		Arrays.fill(GuiClaimedChunks.chunkData, null);
+            if (FTBUtilitiesConfig.world.forced_spawn_dimension_weather != -1) {
+                mc.theWorld.getWorldInfo().setRaining(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 1);
+                mc.theWorld.getWorldInfo().setThundering(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 2);
+            }
+        }
+    }
 
-		for (ClientClaimedChunks.Team team : m.teams.values()) {
-			for (Map.Entry<Integer, ClientClaimedChunks.ChunkData> entry : team.chunks.entrySet()) {
-				int x = entry.getKey() % ChunkSelectorMap.TILES_GUI;
-				int z = entry.getKey() / ChunkSelectorMap.TILES_GUI;
-				GuiClaimedChunks.chunkData[x + z * ChunkSelectorMap.TILES_GUI] = entry.getValue();
-			}
-		}
+    @SubscribeEvent
+    public void onChunkDataUpdate(UpdateClientDataEvent event) {
+        MessageClaimedChunksUpdate m = event.getMessage();
+        GuiClaimedChunks.claimedChunks = m.claimedChunks;
+        GuiClaimedChunks.loadedChunks = m.loadedChunks;
+        GuiClaimedChunks.maxClaimedChunks = m.maxClaimedChunks;
+        GuiClaimedChunks.maxLoadedChunks = m.maxLoadedChunks;
+        Arrays.fill(GuiClaimedChunks.chunkData, null);
 
-		GuiClaimedChunks.AREA.reset();
-		EnumTeamColor prevCol = null;
-		ClientClaimedChunks.ChunkData data;
+        for (ClientClaimedChunks.Team team : m.teams.values()) {
+            for (Map.Entry<Integer, ClientClaimedChunks.ChunkData> entry : team.chunks.entrySet()) {
+                int x = entry.getKey() % ChunkSelectorMap.TILES_GUI;
+                int z = entry.getKey() / ChunkSelectorMap.TILES_GUI;
+                GuiClaimedChunks.chunkData[x + z * ChunkSelectorMap.TILES_GUI] = entry.getValue();
+            }
+        }
 
-		for (int i = 0; i < GuiClaimedChunks.chunkData.length; i++) {
-			data = GuiClaimedChunks.chunkData[i];
+        GuiClaimedChunks.AREA.reset();
+        EnumTeamColor prevCol = null;
+        ClientClaimedChunks.ChunkData data;
 
-			if (data == null) {
-				continue;
-			}
+        for (int i = 0; i < GuiClaimedChunks.chunkData.length; i++) {
+            data = GuiClaimedChunks.chunkData[i];
 
-			if (prevCol != data.team.color) {
-				prevCol = data.team.color;
-				GuiClaimedChunks.AREA.color.set(data.team.color.getColor(), 150);
-			}
+            if (data == null) {
+                continue;
+            }
 
-			GuiClaimedChunks.AREA.rect((i % ChunkSelectorMap.TILES_GUI) * GuiClaimedChunks.TILE_SIZE, (i / ChunkSelectorMap.TILES_GUI) * GuiClaimedChunks.TILE_SIZE,
-					GuiClaimedChunks.TILE_SIZE, GuiClaimedChunks.TILE_SIZE);
-		}
+            if (prevCol != data.team.color) {
+                prevCol = data.team.color;
+                GuiClaimedChunks.AREA.color.set(data.team.color.getColor(), 150);
+            }
 
-		boolean borderU, borderD, borderL, borderR;
+            GuiClaimedChunks.AREA.rect(
+                    (i % ChunkSelectorMap.TILES_GUI) * GuiClaimedChunks.TILE_SIZE,
+                    (i / ChunkSelectorMap.TILES_GUI) * GuiClaimedChunks.TILE_SIZE,
+                    GuiClaimedChunks.TILE_SIZE,
+                    GuiClaimedChunks.TILE_SIZE);
+        }
 
-		for (int i = 0; i < GuiClaimedChunks.chunkData.length; i++) {
-			data = GuiClaimedChunks.chunkData[i];
+        boolean borderU, borderD, borderL, borderR;
 
-			if (data == null) {
-				continue;
-			}
+        for (int i = 0; i < GuiClaimedChunks.chunkData.length; i++) {
+            data = GuiClaimedChunks.chunkData[i];
 
-			int x = i % ChunkSelectorMap.TILES_GUI;
-			int dx = x * GuiClaimedChunks.TILE_SIZE;
-			int y = i / ChunkSelectorMap.TILES_GUI;
-			int dy = y * GuiClaimedChunks.TILE_SIZE;
+            if (data == null) {
+                continue;
+            }
 
-			borderU = y > 0 && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x, y - 1));
-			borderD = y < (ChunkSelectorMap.TILES_GUI - 1) && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x, y + 1));
-			borderL = x > 0 && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x - 1, y));
-			borderR = x < (ChunkSelectorMap.TILES_GUI - 1) && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x + 1, y));
+            int x = i % ChunkSelectorMap.TILES_GUI;
+            int dx = x * GuiClaimedChunks.TILE_SIZE;
+            int y = i / ChunkSelectorMap.TILES_GUI;
+            int dy = y * GuiClaimedChunks.TILE_SIZE;
 
-			if (data.isLoaded()) {
-				GuiClaimedChunks.AREA.color.set(255, 80, 80, 230);
-			} else {
-				GuiClaimedChunks.AREA.color.set(80, 80, 80, 230);
-			}
+            borderU = y > 0 && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x, y - 1));
+            borderD = y < (ChunkSelectorMap.TILES_GUI - 1)
+                    && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x, y + 1));
+            borderL = x > 0 && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x - 1, y));
+            borderR = x < (ChunkSelectorMap.TILES_GUI - 1)
+                    && GuiClaimedChunks.hasBorder(data, GuiClaimedChunks.getAt(x + 1, y));
 
-			if (borderU) {
-				GuiClaimedChunks.AREA.rect(dx, dy, GuiClaimedChunks.TILE_SIZE, 1);
-			}
+            if (data.isLoaded()) {
+                GuiClaimedChunks.AREA.color.set(255, 80, 80, 230);
+            } else {
+                GuiClaimedChunks.AREA.color.set(80, 80, 80, 230);
+            }
 
-			if (borderD) {
-				GuiClaimedChunks.AREA.rect(dx, dy + GuiClaimedChunks.TILE_SIZE - 1, GuiClaimedChunks.TILE_SIZE, 1);
-			}
+            if (borderU) {
+                GuiClaimedChunks.AREA.rect(dx, dy, GuiClaimedChunks.TILE_SIZE, 1);
+            }
 
-			if (borderL) {
-				GuiClaimedChunks.AREA.rect(dx, dy, 1, GuiClaimedChunks.TILE_SIZE);
-			}
+            if (borderD) {
+                GuiClaimedChunks.AREA.rect(dx, dy + GuiClaimedChunks.TILE_SIZE - 1, GuiClaimedChunks.TILE_SIZE, 1);
+            }
 
-			if (borderR) {
-				GuiClaimedChunks.AREA.rect(dx + GuiClaimedChunks.TILE_SIZE - 1, dy, 1, GuiClaimedChunks.TILE_SIZE);
-			}
-		}
-	}
+            if (borderL) {
+                GuiClaimedChunks.AREA.rect(dx, dy, 1, GuiClaimedChunks.TILE_SIZE);
+            }
+
+            if (borderR) {
+                GuiClaimedChunks.AREA.rect(dx + GuiClaimedChunks.TILE_SIZE - 1, dy, 1, GuiClaimedChunks.TILE_SIZE);
+            }
+        }
+    }
 }

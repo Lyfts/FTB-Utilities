@@ -1,5 +1,22 @@
 package com.feed_the_beast.ftbutilities.data;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.HoverEvent;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.FTBLibCommon;
 import com.feed_the_beast.ftblib.lib.EnumMessageLocation;
@@ -19,313 +36,307 @@ import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.event.HoverEvent;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.function.Function;
-
 /**
  * @author LatvianModder
  */
 public class FTBUtilitiesPlayerData extends PlayerData {
-	public static final String TAG_FLY = "fly";
-	public static final String TAG_MUTED = "muted";
-	public static final String TAG_LAST_CHUNK = "ftbu_lchunk";
 
-	public enum Timer {
-		HOME(TeleportType.HOME),
-		WARP(TeleportType.WARP),
-		BACK(TeleportType.BACK),
-		SPAWN(TeleportType.SPAWN),
-		TPA(TeleportType.TPA),
-		RTP(TeleportType.RTP);
+    public static final String TAG_FLY = "fly";
+    public static final String TAG_MUTED = "muted";
+    public static final String TAG_LAST_CHUNK = "ftbu_lchunk";
 
-		public static final Timer[] VALUES = values();
+    public enum Timer {
 
-		private final String cooldown;
-		private final String warmup;
-		private final TeleportType teleportType;
+        HOME(TeleportType.HOME),
+        WARP(TeleportType.WARP),
+        BACK(TeleportType.BACK),
+        SPAWN(TeleportType.SPAWN),
+        TPA(TeleportType.TPA),
+        RTP(TeleportType.RTP);
 
-		Timer(TeleportType teleportType) {
-			this.teleportType = teleportType;
-			this.cooldown = teleportType.getCooldownPermission();
-			this.warmup = teleportType.getWarmupPermission();
-		}
+        public static final Timer[] VALUES = values();
 
-		public void teleport(EntityPlayerMP player, Function<EntityPlayerMP, TeleporterDimPos> pos,
-				@Nullable IScheduledTask extraTask) {
-			Universe universe = Universe.get();
-			int seconds = (int) RankConfigAPI.get(player, warmup).getTimer().seconds();
+        private final String cooldown;
+        private final String warmup;
+        private final TeleportType teleportType;
 
-			if (seconds > 0) {
-				player.addChatMessage(
-						StringUtils.color(FTBLib.lang(player, "stand_still", seconds).appendText(" [" + seconds + "]"),
-								EnumChatFormatting.GOLD));
-				universe.scheduleTask(TimeType.MILLIS, System.currentTimeMillis() + 1000L,
-						new TeleportTask(teleportType, player, this, seconds, seconds, pos, extraTask));
-			} else {
-				new TeleportTask(teleportType, player, this, 0, 0, pos, extraTask).execute(universe);
-			}
-		}
-	}
+        Timer(TeleportType teleportType) {
+            this.teleportType = teleportType;
+            this.cooldown = teleportType.getCooldownPermission();
+            this.warmup = teleportType.getWarmupPermission();
+        }
 
-	private static class TeleportTask implements IScheduledTask {
-		private final EntityPlayerMP player;
-		private final Timer timer;
-		private final BlockDimPos startPos;
-		private final Function<EntityPlayerMP, TeleporterDimPos> pos;
-		private final float startHP;
-		private final int startSeconds, secondsLeft;
-		private final IScheduledTask extraTask;
-		private final TeleportType teleportType;
+        public void teleport(EntityPlayerMP player, Function<EntityPlayerMP, TeleporterDimPos> pos,
+                @Nullable IScheduledTask extraTask) {
+            Universe universe = Universe.get();
+            int seconds = (int) RankConfigAPI.get(player, warmup).getTimer().seconds();
 
-		private TeleportTask(TeleportType teleportType, EntityPlayerMP p, Timer t, int ss, int s,
-				Function<EntityPlayerMP, TeleporterDimPos> to, @Nullable IScheduledTask e) {
-			this.teleportType = teleportType;
-			this.player = p;
-			this.timer = t;
-			this.startPos = new BlockDimPos((Entity) player);
-			this.startHP = player.getHealth();
-			this.pos = to;
-			this.startSeconds = ss;
-			this.secondsLeft = s;
-			this.extraTask = e;
-		}
+            if (seconds > 0) {
+                player.addChatMessage(
+                        StringUtils.color(
+                                FTBLib.lang(player, "stand_still", seconds).appendText(" [" + seconds + "]"),
+                                EnumChatFormatting.GOLD));
+                universe.scheduleTask(
+                        TimeType.MILLIS,
+                        System.currentTimeMillis() + 1000L,
+                        new TeleportTask(teleportType, player, this, seconds, seconds, pos, extraTask));
+            } else {
+                new TeleportTask(teleportType, player, this, 0, 0, pos, extraTask).execute(universe);
+            }
+        }
+    }
 
-		@Override
-		public void execute(Universe universe) {
-			if (!startPos.equalsPos(new BlockDimPos((Entity) player)) || startHP > player.getHealth()) {
-				player.addChatMessage(
-						StringUtils.color(FTBLib.lang(player, "stand_still_failed"), EnumChatFormatting.RED));
-			} else if (secondsLeft <= 1) {
-				TeleporterDimPos teleporter = pos.apply(player);
+    private static class TeleportTask implements IScheduledTask {
 
-				if (teleporter != null) {
-					FTBUtilitiesPlayerData data = get(universe.getPlayer(player));
-					data.setLastTeleport(teleportType, new BlockDimPos((Entity) player));
-					teleporter.teleport(player);
+        private final EntityPlayerMP player;
+        private final Timer timer;
+        private final BlockDimPos startPos;
+        private final Function<EntityPlayerMP, TeleporterDimPos> pos;
+        private final float startHP;
+        private final int startSeconds, secondsLeft;
+        private final IScheduledTask extraTask;
+        private final TeleportType teleportType;
 
-					if (player.ridingEntity != null) {
-						teleporter.teleport(player.ridingEntity);
-					}
+        private TeleportTask(TeleportType teleportType, EntityPlayerMP p, Timer t, int ss, int s,
+                Function<EntityPlayerMP, TeleporterDimPos> to, @Nullable IScheduledTask e) {
+            this.teleportType = teleportType;
+            this.player = p;
+            this.timer = t;
+            this.startPos = new BlockDimPos((Entity) player);
+            this.startHP = player.getHealth();
+            this.pos = to;
+            this.startSeconds = ss;
+            this.secondsLeft = s;
+            this.extraTask = e;
+        }
 
-					data.lastTeleport[timer.ordinal()] = System.currentTimeMillis();
+        @Override
+        public void execute(Universe universe) {
+            if (!startPos.equalsPos(new BlockDimPos((Entity) player)) || startHP > player.getHealth()) {
+                player.addChatMessage(
+                        StringUtils.color(FTBLib.lang(player, "stand_still_failed"), EnumChatFormatting.RED));
+            } else if (secondsLeft <= 1) {
+                TeleporterDimPos teleporter = pos.apply(player);
 
-					if (secondsLeft != 0) {
-						player.addChatMessage(FTBLib.lang(player, "teleporting"));
-					}
+                if (teleporter != null) {
+                    FTBUtilitiesPlayerData data = get(universe.getPlayer(player));
+                    data.setLastTeleport(teleportType, new BlockDimPos((Entity) player));
+                    teleporter.teleport(player);
 
-					if (extraTask != null) {
-						extraTask.execute(universe);
-					}
-				}
-			} else {
-				universe.scheduleTask(TimeType.MILLIS, System.currentTimeMillis() + 1000L,
-						new TeleportTask(teleportType, player, timer, startSeconds, secondsLeft - 1, pos, extraTask));
-				player.addChatMessage(StringUtils.color(
-						FTBLib.lang(player, "stand_still", startSeconds).appendText(" [" + (secondsLeft - 1) + "]"),
-						EnumChatFormatting.GOLD));
-			}
-		}
-	}
+                    if (player.ridingEntity != null) {
+                        teleporter.teleport(player.ridingEntity);
+                    }
 
-	public static FTBUtilitiesPlayerData get(ForgePlayer player) {
-		return player.getData().get(FTBUtilities.MOD_ID);
-	}
+                    data.lastTeleport[timer.ordinal()] = System.currentTimeMillis();
 
-	private boolean renderBadge = true;
-	private boolean disableGlobalBadge = false;
-	private boolean enablePVP = true;
-	private String nickname = "";
-	private EnumMessageLocation afkMesageLocation = EnumMessageLocation.CHAT;
+                    if (secondsLeft != 0) {
+                        player.addChatMessage(FTBLib.lang(player, "teleporting"));
+                    }
 
-	public final Collection<ForgePlayer> tpaRequestsFrom;
-	public long afkTime;
-	private IChatComponent cachedNameForChat;
+                    if (extraTask != null) {
+                        extraTask.execute(universe);
+                    }
+                }
+            } else {
+                universe.scheduleTask(
+                        TimeType.MILLIS,
+                        System.currentTimeMillis() + 1000L,
+                        new TeleportTask(teleportType, player, timer, startSeconds, secondsLeft - 1, pos, extraTask));
+                player.addChatMessage(
+                        StringUtils.color(
+                                FTBLib.lang(player, "stand_still", startSeconds)
+                                        .appendText(" [" + (secondsLeft - 1) + "]"),
+                                EnumChatFormatting.GOLD));
+            }
+        }
+    }
 
-	private BlockDimPos lastSafePos;
-	private final long[] lastTeleport;
-	public final BlockDimPosStorage homes;
-	private TeleportTracker teleportTracker;
+    public static FTBUtilitiesPlayerData get(ForgePlayer player) {
+        return player.getData().get(FTBUtilities.MOD_ID);
+    }
 
-	public FTBUtilitiesPlayerData(ForgePlayer player) {
-		super(player);
-		homes = new BlockDimPosStorage();
-		tpaRequestsFrom = new HashSet<>();
-		lastTeleport = new long[Timer.VALUES.length];
-		teleportTracker = new TeleportTracker();
-	}
+    private boolean renderBadge = true;
+    private boolean disableGlobalBadge = false;
+    private boolean enablePVP = true;
+    private String nickname = "";
+    private EnumMessageLocation afkMesageLocation = EnumMessageLocation.CHAT;
 
-	@Override
-	public String getId() {
-		return FTBUtilities.MOD_ID;
-	}
+    public final Collection<ForgePlayer> tpaRequestsFrom;
+    public long afkTime;
+    private IChatComponent cachedNameForChat;
 
-	@Override
-	public NBTTagCompound serializeNBT() {
-		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setBoolean("RenderBadge", renderBadge);
-		nbt.setBoolean("DisableGlobalBadges", disableGlobalBadge);
-		nbt.setBoolean("EnablePVP", enablePVP);
-		nbt.setTag("Homes", homes.serializeNBT());
+    private BlockDimPos lastSafePos;
+    private final long[] lastTeleport;
+    public final BlockDimPosStorage homes;
+    private TeleportTracker teleportTracker;
 
-		nbt.setString("Nickname", nickname);
-		nbt.setString("AFK", EnumMessageLocation.NAME_MAP.getName(afkMesageLocation));
-		return nbt;
-	}
+    public FTBUtilitiesPlayerData(ForgePlayer player) {
+        super(player);
+        homes = new BlockDimPosStorage();
+        tpaRequestsFrom = new HashSet<>();
+        lastTeleport = new long[Timer.VALUES.length];
+        teleportTracker = new TeleportTracker();
+    }
 
-	@Override
-	public void deserializeNBT(NBTTagCompound nbt) {
-		renderBadge = !nbt.hasKey("RenderBadge") || nbt.getBoolean("RenderBadge");
-		disableGlobalBadge = nbt.getBoolean("DisableGlobalBadges");
-		enablePVP = !nbt.hasKey("EnablePVP") || nbt.getBoolean("EnablePVP");
-		homes.deserializeNBT(nbt.getCompoundTag("Homes"));
-		teleportTracker = new TeleportTracker();
-		teleportTracker.deserializeNBT(nbt.getCompoundTag("teleportTracker"));
-		setLastDeath(BlockDimPos.fromIntArray(nbt.getIntArray("LastDeath")), 0);
-		nickname = nbt.getString("Nickname");
-		afkMesageLocation = EnumMessageLocation.NAME_MAP.get(nbt.getString("AFK"));
-	}
+    @Override
+    public String getId() {
+        return FTBUtilities.MOD_ID;
+    }
 
-	public void addConfig(ConfigGroup main) {
-		ConfigGroup config = main.getGroup(FTBUtilities.MOD_ID);
-		config.setDisplayName(new ChatComponentText(FTBUtilities.MOD_NAME));
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setBoolean("RenderBadge", renderBadge);
+        nbt.setBoolean("DisableGlobalBadges", disableGlobalBadge);
+        nbt.setBoolean("EnablePVP", enablePVP);
+        nbt.setTag("Homes", homes.serializeNBT());
 
-		config.addBool("render_badge", () -> renderBadge, v -> renderBadge = v, true);
-		config.addBool("disable_global_badge", () -> disableGlobalBadge, v -> disableGlobalBadge = v, false);
-		config.addBool("enable_pvp", () -> enablePVP, v -> enablePVP = v, true);
+        nbt.setString("Nickname", nickname);
+        nbt.setString("AFK", EnumMessageLocation.NAME_MAP.getName(afkMesageLocation));
+        return nbt;
+    }
 
-		if (FTBUtilitiesConfig.commands.nick && player.hasPermission(FTBUtilitiesPermissions.CHAT_NICKNAME_SET)) {
-			config.addString("nickname", () -> nickname, v -> nickname = v, "");
-		}
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt) {
+        renderBadge = !nbt.hasKey("RenderBadge") || nbt.getBoolean("RenderBadge");
+        disableGlobalBadge = nbt.getBoolean("DisableGlobalBadges");
+        enablePVP = !nbt.hasKey("EnablePVP") || nbt.getBoolean("EnablePVP");
+        homes.deserializeNBT(nbt.getCompoundTag("Homes"));
+        teleportTracker = new TeleportTracker();
+        teleportTracker.deserializeNBT(nbt.getCompoundTag("teleportTracker"));
+        setLastDeath(BlockDimPos.fromIntArray(nbt.getIntArray("LastDeath")), 0);
+        nickname = nbt.getString("Nickname");
+        afkMesageLocation = EnumMessageLocation.NAME_MAP.get(nbt.getString("AFK"));
+    }
 
-		if (FTBUtilitiesConfig.afk.isEnabled(player.team.universe.server)) {
-			config.addEnum("afk", () -> afkMesageLocation, v -> afkMesageLocation = v, EnumMessageLocation.NAME_MAP);
-		}
-	}
+    public void addConfig(ConfigGroup main) {
+        ConfigGroup config = main.getGroup(FTBUtilities.MOD_ID);
+        config.setDisplayName(new ChatComponentText(FTBUtilities.MOD_NAME));
 
-	public boolean renderBadge() {
-		return renderBadge;
-	}
+        config.addBool("render_badge", () -> renderBadge, v -> renderBadge = v, true);
+        config.addBool("disable_global_badge", () -> disableGlobalBadge, v -> disableGlobalBadge = v, false);
+        config.addBool("enable_pvp", () -> enablePVP, v -> enablePVP = v, true);
 
-	public boolean disableGlobalBadge() {
-		return disableGlobalBadge;
-	}
+        if (FTBUtilitiesConfig.commands.nick && player.hasPermission(FTBUtilitiesPermissions.CHAT_NICKNAME_SET)) {
+            config.addString("nickname", () -> nickname, v -> nickname = v, "");
+        }
 
-	public boolean enablePVP() {
-		return enablePVP;
-	}
+        if (FTBUtilitiesConfig.afk.isEnabled(player.team.universe.server)) {
+            config.addEnum("afk", () -> afkMesageLocation, v -> afkMesageLocation = v, EnumMessageLocation.NAME_MAP);
+        }
+    }
 
-	public String getNickname() {
-		return nickname;
-	}
+    public boolean renderBadge() {
+        return renderBadge;
+    }
 
-	public void setNickname(String name) {
-		nickname = name.equals(player.getName()) ? "" : name;
-		player.markDirty();
-		clearCache();
-	}
+    public boolean disableGlobalBadge() {
+        return disableGlobalBadge;
+    }
 
-	public EnumMessageLocation getAFKMessageLocation() {
-		return afkMesageLocation;
-	}
+    public boolean enablePVP() {
+        return enablePVP;
+    }
 
-	public void setLastDeath(@Nullable BlockDimPos pos) {
-		setLastDeath(pos, MinecraftServer.getSystemTimeMillis());
-	}
+    public String getNickname() {
+        return nickname;
+    }
 
-	public void setLastDeath(@Nullable BlockDimPos pos, long timestamp) {
-		if (pos == null) {
-			return;
-		}
-		teleportTracker.logTeleport(TeleportType.RESPAWN, pos, timestamp);
-		player.markDirty();
-	}
+    public void setNickname(String name) {
+        nickname = name.equals(player.getName()) ? "" : name;
+        player.markDirty();
+        clearCache();
+    }
 
-	public BlockDimPos getLastDeath() {
-		return teleportTracker.getLastDeath().getBlockDimPos();
-	}
+    public EnumMessageLocation getAFKMessageLocation() {
+        return afkMesageLocation;
+    }
 
-	public void setLastSafePos(@Nullable BlockDimPos pos) {
-		lastSafePos = pos;
-		player.markDirty();
-	}
+    public void setLastDeath(@Nullable BlockDimPos pos) {
+        setLastDeath(pos, MinecraftServer.getSystemTimeMillis());
+    }
 
-	@Nullable
-	public BlockDimPos getLastSafePos() {
-		return lastSafePos;
-	}
+    public void setLastDeath(@Nullable BlockDimPos pos, long timestamp) {
+        if (pos == null) {
+            return;
+        }
+        teleportTracker.logTeleport(TeleportType.RESPAWN, pos, timestamp);
+        player.markDirty();
+    }
 
-	public void checkTeleportCooldown(ICommandSender sender, Timer timer) throws CommandException {
-		long cooldown = lastTeleport[timer.ordinal()] + player.getRankConfig(timer.cooldown).getTimer().millis()
-				- System.currentTimeMillis();
+    public BlockDimPos getLastDeath() {
+        return teleportTracker.getLastDeath().getBlockDimPos();
+    }
 
-		if (cooldown > 0) {
-			throw FTBLib.error(sender, "cant_use_now_cooldown", StringUtils.getTimeString(cooldown));
-		}
-	}
+    public void setLastSafePos(@Nullable BlockDimPos pos) {
+        lastSafePos = pos;
+        player.markDirty();
+    }
 
-	@Override
-	public void clearCache() {
-		cachedNameForChat = null;
+    @Nullable
+    public BlockDimPos getLastSafePos() {
+        return lastSafePos;
+    }
 
-		EntityPlayerMP p = player.getNullablePlayer();
+    public void checkTeleportCooldown(ICommandSender sender, Timer timer) throws CommandException {
+        long cooldown = lastTeleport[timer.ordinal()] + player.getRankConfig(timer.cooldown).getTimer().millis()
+                - System.currentTimeMillis();
 
-		if (p != null) {
-			p.refreshDisplayName();
-		}
-	}
+        if (cooldown > 0) {
+            throw FTBLib.error(sender, "cant_use_now_cooldown", StringUtils.getTimeString(cooldown));
+        }
+    }
 
-	public IChatComponent getNameForChat(EntityPlayerMP playerMP) {
-		if (cachedNameForChat != null) {
-			return cachedNameForChat.createCopy();
-		}
+    @Override
+    public void clearCache() {
+        cachedNameForChat = null;
 
-		String text = player.getRankConfig(FTBUtilitiesPermissions.CHAT_NAME_FORMAT).getString();
+        EntityPlayerMP p = player.getNullablePlayer();
 
-		try {
-			cachedNameForChat = TextComponentParser.parse(text, FTBLibCommon.chatFormattingSubstituteFunction(player));
-		} catch (Exception ex) {
-			String s = "Error parsing " + text + ": " + ex.getLocalizedMessage();
-			FTBUtilities.LOGGER.error(s);
-			cachedNameForChat = new ChatComponentText("BrokenFormatting");
-			cachedNameForChat.getChatStyle().setColor(EnumChatFormatting.RED);
-			cachedNameForChat.getChatStyle()
-					.setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(s)));
-		}
+        if (p != null) {
+            p.refreshDisplayName();
+        }
+    }
 
-		if (NBTUtils.getPersistedData(playerMP, false).getBoolean("recording")) {
-			IChatComponent rec = new ChatComponentText("\u25A0 ");
-			rec.getChatStyle().setColor(EnumChatFormatting.RED);
-			cachedNameForChat = new ChatComponentText("").appendSibling(rec).appendSibling(cachedNameForChat);
-		}
+    public IChatComponent getNameForChat(EntityPlayerMP playerMP) {
+        if (cachedNameForChat != null) {
+            return cachedNameForChat.createCopy();
+        }
 
-		cachedNameForChat.appendText(" ");
-		return cachedNameForChat.createCopy();
-	}
+        String text = player.getRankConfig(FTBUtilitiesPermissions.CHAT_NAME_FORMAT).getString();
 
-	public TeleportLog getLastTeleportLog() {
-		return teleportTracker.getLastAvailableLog(player.getProfile());
-	}
+        try {
+            cachedNameForChat = TextComponentParser.parse(text, FTBLibCommon.chatFormattingSubstituteFunction(player));
+        } catch (Exception ex) {
+            String s = "Error parsing " + text + ": " + ex.getLocalizedMessage();
+            FTBUtilities.LOGGER.error(s);
+            cachedNameForChat = new ChatComponentText("BrokenFormatting");
+            cachedNameForChat.getChatStyle().setColor(EnumChatFormatting.RED);
+            cachedNameForChat.getChatStyle()
+                    .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(s)));
+        }
 
-	public void setLastTeleport(TeleportType teleportType, BlockDimPos from) {
-		teleportTracker.logTeleport(teleportType, from, MinecraftServer.getSystemTimeMillis());
-		player.markDirty();
-	}
+        if (NBTUtils.getPersistedData(playerMP, false).getBoolean("recording")) {
+            IChatComponent rec = new ChatComponentText("\u25A0 ");
+            rec.getChatStyle().setColor(EnumChatFormatting.RED);
+            cachedNameForChat = new ChatComponentText("").appendSibling(rec).appendSibling(cachedNameForChat);
+        }
 
-	public void clearLastTeleport(TeleportType teleportType) {
-		teleportTracker.clearLog(teleportType);
-		player.markDirty();
-	}
+        cachedNameForChat.appendText(" ");
+        return cachedNameForChat.createCopy();
+    }
+
+    public TeleportLog getLastTeleportLog() {
+        return teleportTracker.getLastAvailableLog(player.getProfile());
+    }
+
+    public void setLastTeleport(TeleportType teleportType, BlockDimPos from) {
+        teleportTracker.logTeleport(teleportType, from, MinecraftServer.getSystemTimeMillis());
+        player.markDirty();
+    }
+
+    public void clearLastTeleport(TeleportType teleportType) {
+        teleportTracker.clearLog(teleportType);
+        player.markDirty();
+    }
 }

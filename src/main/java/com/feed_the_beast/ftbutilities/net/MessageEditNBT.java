@@ -1,5 +1,7 @@
 package com.feed_the_beast.ftbutilities.net;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.io.DataIn;
 import com.feed_the_beast.ftblib.lib.io.DataOut;
@@ -10,54 +12,45 @@ import com.feed_the_beast.ftbutilities.gui.GuiEditNBT;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.nbt.NBTTagCompound;
 
 /**
  * @author LatvianModder
  */
-public class MessageEditNBT extends MessageToClient
-{
-	private NBTTagCompound info, mainNbt;
+public class MessageEditNBT extends MessageToClient {
 
-	public MessageEditNBT()
-	{
-	}
+    private NBTTagCompound info, mainNbt;
 
-	public MessageEditNBT(NBTTagCompound i, NBTTagCompound nbt)
-	{
-		info = i;
-		mainNbt = nbt;
+    public MessageEditNBT() {}
 
-		if (FTBLibConfig.debugging.log_config_editing)
-		{
-			FTBUtilities.LOGGER.info("Editing NBT: " + mainNbt);
-		}
-	}
+    public MessageEditNBT(NBTTagCompound i, NBTTagCompound nbt) {
+        info = i;
+        mainNbt = nbt;
 
-	@Override
-	public NetworkWrapper getWrapper()
-	{
-		return FTBUtilitiesNetHandler.FILES;
-	}
+        if (FTBLibConfig.debugging.log_config_editing) {
+            FTBUtilities.LOGGER.info("Editing NBT: " + mainNbt);
+        }
+    }
 
-	@Override
-	public void writeData(DataOut data)
-	{
-		data.writeNBT(info);
-		data.writeNBT(mainNbt);
-	}
+    @Override
+    public NetworkWrapper getWrapper() {
+        return FTBUtilitiesNetHandler.FILES;
+    }
 
-	@Override
-	public void readData(DataIn data)
-	{
-		info = data.readNBT();
-		mainNbt = data.readNBT();
-	}
+    @Override
+    public void writeData(DataOut data) {
+        data.writeNBT(info);
+        data.writeNBT(mainNbt);
+    }
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void onMessage()
-	{
-		new GuiEditNBT(info, mainNbt).openGui();
-	}
+    @Override
+    public void readData(DataIn data) {
+        info = data.readNBT();
+        mainNbt = data.readNBT();
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void onMessage() {
+        new GuiEditNBT(info, mainNbt).openGui();
+    }
 }

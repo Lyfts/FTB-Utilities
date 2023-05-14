@@ -1,5 +1,9 @@
 package com.feed_the_beast.ftbutilities.command.chunks;
 
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
@@ -11,53 +15,52 @@ import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 /**
  * @author LatvianModder
  */
 public class CmdClaim extends CmdBase {
-	public CmdClaim() {
-		super("claim", Level.ALL);
-	}
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-		if (!ClaimedChunks.isActive()) {
-			throw FTBLib.error(sender, "feature_disabled_server");
-		}
+    public CmdClaim() {
+        super("claim", Level.ALL);
+    }
 
-		EntityPlayerMP player = getCommandSenderAsPlayer(sender);
-		ForgePlayer p = CommandUtils.getSelfOrOther(player, args, 0, FTBUtilitiesPermissions.CLAIMS_OTHER_CLAIM);
-		ChunkDimPos pos = new ChunkDimPos(player);
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        if (!ClaimedChunks.isActive()) {
+            throw FTBLib.error(sender, "feature_disabled_server");
+        }
 
-		if (!player.getUniqueID().equals(p.getId())
-				&& !ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_CLAIM)) {
-			FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
-			return;
-		}
+        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+        ForgePlayer p = CommandUtils.getSelfOrOther(player, args, 0, FTBUtilitiesPermissions.CLAIMS_OTHER_CLAIM);
+        ChunkDimPos pos = new ChunkDimPos(player);
 
-		switch (ClaimedChunks.instance.claimChunk(p, pos)) {
-			case SUCCESS:
-				Notification
-						.of(FTBUtilitiesNotifications.CHUNK_MODIFIED,
-								FTBUtilities.lang(player, "ftbutilities.lang.chunks.chunk_claimed"))
-						.send(player.mcServer, player);
-				FTBUtilitiesNotifications.updateChunkMessage(player, pos);
-				break;
-			case DIMENSION_BLOCKED:
-				Notification
-						.of(FTBUtilitiesNotifications.CHUNK_CANT_CLAIM,
-								FTBUtilities.lang(player, "ftbutilities.lang.chunks.claiming_not_enabled_dim"))
-						.setError().send(player.mcServer, player);
-				break;
-			case NO_POWER:
-				break;
-			default:
-				FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
-				break;
-		}
-	}
+        if (!player.getUniqueID().equals(p.getId())
+                && !ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_CLAIM)) {
+            FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
+            return;
+        }
+
+        switch (ClaimedChunks.instance.claimChunk(p, pos)) {
+            case SUCCESS:
+                Notification
+                        .of(
+                                FTBUtilitiesNotifications.CHUNK_MODIFIED,
+                                FTBUtilities.lang(player, "ftbutilities.lang.chunks.chunk_claimed"))
+                        .send(player.mcServer, player);
+                FTBUtilitiesNotifications.updateChunkMessage(player, pos);
+                break;
+            case DIMENSION_BLOCKED:
+                Notification
+                        .of(
+                                FTBUtilitiesNotifications.CHUNK_CANT_CLAIM,
+                                FTBUtilities.lang(player, "ftbutilities.lang.chunks.claiming_not_enabled_dim"))
+                        .setError().send(player.mcServer, player);
+                break;
+            case NO_POWER:
+                break;
+            default:
+                FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
+                break;
+        }
+    }
 }

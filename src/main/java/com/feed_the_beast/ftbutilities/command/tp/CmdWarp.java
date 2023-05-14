@@ -3,6 +3,11 @@ package com.feed_the_beast.ftbutilities.command.tp;
 import java.util.Collection;
 import java.util.List;
 
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ChatComponentText;
+
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
 import com.feed_the_beast.ftblib.lib.math.BlockDimPos;
@@ -16,57 +21,57 @@ import com.feed_the_beast.ftbutilities.ranks.Rank;
 import com.feed_the_beast.ftbutilities.ranks.Ranks;
 
 import cpw.mods.fml.common.eventhandler.Event;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentText;
 
 public class CmdWarp extends CmdBase {
-	public CmdWarp() {
-		super("warp", Level.ALL);
-	}
 
-	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-		if (args.length == 1) {
-			return getListOfStringsFromIterableMatchingLastWord(args, FTBUtilitiesUniverseData.WARPS.list());
-		}
+    public CmdWarp() {
+        super("warp", Level.ALL);
+    }
 
-		return super.addTabCompletionOptions(sender, args);
-	}
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return getListOfStringsFromIterableMatchingLastWord(args, FTBUtilitiesUniverseData.WARPS.list());
+        }
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-		checkArgs(sender, args, 1);
+        return super.addTabCompletionOptions(sender, args);
+    }
 
-		args[0] = args[0].toLowerCase();
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        checkArgs(sender, args, 1);
 
-		if (args[0].equals("list")) {
-			Collection<String> list = FTBUtilitiesUniverseData.WARPS.list();
-			sender.addChatMessage(new ChatComponentText(list.isEmpty() ? "-" : StringJoiner.with(", ").join(list)));
-			return;
-		}
+        args[0] = args[0].toLowerCase();
 
-		EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+        if (args[0].equals("list")) {
+            Collection<String> list = FTBUtilitiesUniverseData.WARPS.list();
+            sender.addChatMessage(new ChatComponentText(list.isEmpty() ? "-" : StringJoiner.with(", ").join(list)));
+            return;
+        }
 
-		if (Ranks.INSTANCE.getPermissionResult(player, Rank.NODE_COMMAND + ".ftbutilities.warp.teleport." + args[0],
-				true) == Event.Result.DENY) {
-			throw new CommandException("commands.generic.permission");
-		}
+        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
 
-		BlockDimPos p = FTBUtilitiesUniverseData.WARPS.get(args[0]);
+        if (Ranks.INSTANCE
+                .getPermissionResult(player, Rank.NODE_COMMAND + ".ftbutilities.warp.teleport." + args[0], true)
+                == Event.Result.DENY) {
+            throw new CommandException("commands.generic.permission");
+        }
 
-		if (p == null) {
-			throw FTBUtilities.error(sender, "ftbutilities.lang.warps.not_set", args[0]);
-		}
+        BlockDimPos p = FTBUtilitiesUniverseData.WARPS.get(args[0]);
 
-		FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(CommandUtils.getForgePlayer(player));
-		data.checkTeleportCooldown(sender, FTBUtilitiesPlayerData.Timer.WARP);
-		FTBUtilitiesPlayerData.Timer.WARP
-				.teleport(player, playerMP -> p.teleporter(),
-						universe -> Notification
-								.of(FTBUtilitiesNotifications.TELEPORT,
-										FTBUtilities.lang(sender, "ftbutilities.lang.warps.tp", args[0]))
-								.send(player.mcServer, player));
-	}
+        if (p == null) {
+            throw FTBUtilities.error(sender, "ftbutilities.lang.warps.not_set", args[0]);
+        }
+
+        FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(CommandUtils.getForgePlayer(player));
+        data.checkTeleportCooldown(sender, FTBUtilitiesPlayerData.Timer.WARP);
+        FTBUtilitiesPlayerData.Timer.WARP.teleport(
+                player,
+                playerMP -> p.teleporter(),
+                universe -> Notification
+                        .of(
+                                FTBUtilitiesNotifications.TELEPORT,
+                                FTBUtilities.lang(sender, "ftbutilities.lang.warps.tp", args[0]))
+                        .send(player.mcServer, player));
+    }
 }

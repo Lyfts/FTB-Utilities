@@ -1,5 +1,12 @@
 package com.feed_the_beast.ftbutilities.net;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.feed_the_beast.ftblib.lib.io.DataIn;
@@ -9,85 +16,80 @@ import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 import com.feed_the_beast.ftbutilities.data.Leaderboard;
 import com.feed_the_beast.ftbutilities.data.LeaderboardValue;
 import com.feed_the_beast.ftbutilities.gui.GuiLeaderboard;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.EnumChatFormatting;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MessageLeaderboardResponse extends MessageToClient {
-	private static final DataOut.Serializer<LeaderboardValue> VALUE_SERIALIZER = (data, object) -> {
-		data.writeString(object.username);
-		data.writeTextComponent(object.value);
-		data.writeByte(object.color.ordinal());
-	};
 
-	private static final DataIn.Deserializer<LeaderboardValue> VALUE_DESERIALIZER = data -> {
-		LeaderboardValue value = new LeaderboardValue();
-		value.username = data.readString();
-		value.value = data.readTextComponent();
-		value.color = EnumChatFormatting.values()[data.readUnsignedByte()];
-		return value;
-	};
+    private static final DataOut.Serializer<LeaderboardValue> VALUE_SERIALIZER = (data, object) -> {
+        data.writeString(object.username);
+        data.writeTextComponent(object.value);
+        data.writeByte(object.color.ordinal());
+    };
 
-	private IChatComponent title;
-	private List<LeaderboardValue> values;
+    private static final DataIn.Deserializer<LeaderboardValue> VALUE_DESERIALIZER = data -> {
+        LeaderboardValue value = new LeaderboardValue();
+        value.username = data.readString();
+        value.value = data.readTextComponent();
+        value.color = EnumChatFormatting.values()[data.readUnsignedByte()];
+        return value;
+    };
 
-	public MessageLeaderboardResponse() {
-	}
+    private IChatComponent title;
+    private List<LeaderboardValue> values;
 
-	public MessageLeaderboardResponse(EntityPlayerMP player, Leaderboard leaderboard) {
-		title = leaderboard.getTitle();
-		values = new ArrayList<>();
+    public MessageLeaderboardResponse() {}
 
-		ForgePlayer p0 = Universe.get().getPlayer(player);
-		List<ForgePlayer> players = new ArrayList<>(Universe.get().getPlayers());
-		players.sort(leaderboard.getComparator());
+    public MessageLeaderboardResponse(EntityPlayerMP player, Leaderboard leaderboard) {
+        title = leaderboard.getTitle();
+        values = new ArrayList<>();
 
-		for (int i = 0; i < players.size(); i++) {
-			ForgePlayer p = players.get(i);
-			LeaderboardValue value = new LeaderboardValue();
-			value.username = p.getDisplayNameString();
-			value.value = leaderboard.createValue(p);
+        ForgePlayer p0 = Universe.get().getPlayer(player);
+        List<ForgePlayer> players = new ArrayList<>(Universe.get().getPlayers());
+        players.sort(leaderboard.getComparator());
 
-			if (p == p0) {
-				value.color = EnumChatFormatting.DARK_GREEN;
-			} else if (!leaderboard.hasValidValue(p)) {
-				value.color = EnumChatFormatting.DARK_GRAY;
-			} else if (i < 3) {
-				value.color = EnumChatFormatting.GOLD;
-			} else {
-				value.color = EnumChatFormatting.RESET;
-			}
+        for (int i = 0; i < players.size(); i++) {
+            ForgePlayer p = players.get(i);
+            LeaderboardValue value = new LeaderboardValue();
+            value.username = p.getDisplayNameString();
+            value.value = leaderboard.createValue(p);
 
-			values.add(value);
-		}
-	}
+            if (p == p0) {
+                value.color = EnumChatFormatting.DARK_GREEN;
+            } else if (!leaderboard.hasValidValue(p)) {
+                value.color = EnumChatFormatting.DARK_GRAY;
+            } else if (i < 3) {
+                value.color = EnumChatFormatting.GOLD;
+            } else {
+                value.color = EnumChatFormatting.RESET;
+            }
 
-	@Override
-	public NetworkWrapper getWrapper() {
-		return FTBUtilitiesNetHandler.STATS;
-	}
+            values.add(value);
+        }
+    }
 
-	@Override
-	public void writeData(DataOut data) {
-		data.writeTextComponent(title);
-		data.writeCollection(values, VALUE_SERIALIZER);
-	}
+    @Override
+    public NetworkWrapper getWrapper() {
+        return FTBUtilitiesNetHandler.STATS;
+    }
 
-	@Override
-	public void readData(DataIn data) {
-		title = data.readTextComponent();
-		values = new ArrayList<>();
-		data.readCollection(values, VALUE_DESERIALIZER);
-	}
+    @Override
+    public void writeData(DataOut data) {
+        data.writeTextComponent(title);
+        data.writeCollection(values, VALUE_SERIALIZER);
+    }
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void onMessage() {
-		new GuiLeaderboard(title, values).openGui();
-	}
+    @Override
+    public void readData(DataIn data) {
+        title = data.readTextComponent();
+        values = new ArrayList<>();
+        data.readCollection(values, VALUE_DESERIALIZER);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void onMessage() {
+        new GuiLeaderboard(title, values).openGui();
+    }
 }

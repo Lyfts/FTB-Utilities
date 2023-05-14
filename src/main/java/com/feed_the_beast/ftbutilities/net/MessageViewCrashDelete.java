@@ -1,64 +1,65 @@
 package com.feed_the_beast.ftbutilities.net;
 
+import java.io.File;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.io.DataIn;
 import com.feed_the_beast.ftblib.lib.io.DataOut;
 import com.feed_the_beast.ftblib.lib.net.MessageToServer;
 import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
-import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
-import net.minecraft.entity.player.EntityPlayerMP;
 import com.feed_the_beast.ftblib.lib.util.permission.PermissionAPI;
-
-import java.io.File;
+import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 
 /**
  * @author LatvianModder
  */
 public class MessageViewCrashDelete extends MessageToServer {
-	private String id;
 
-	public MessageViewCrashDelete() {
-	}
+    private String id;
 
-	public MessageViewCrashDelete(String s) {
-		id = s;
-	}
+    public MessageViewCrashDelete() {}
 
-	@Override
-	public NetworkWrapper getWrapper() {
-		return FTBUtilitiesNetHandler.FILES;
-	}
+    public MessageViewCrashDelete(String s) {
+        id = s;
+    }
 
-	@Override
-	public void writeData(DataOut data) {
-		data.writeString(id);
-	}
+    @Override
+    public NetworkWrapper getWrapper() {
+        return FTBUtilitiesNetHandler.FILES;
+    }
 
-	@Override
-	public void readData(DataIn data) {
-		id = data.readString();
-	}
+    @Override
+    public void writeData(DataOut data) {
+        data.writeString(id);
+    }
 
-	@Override
-	public void onMessage(EntityPlayerMP player) {
-		if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_VIEW)) {
-			File folder = player.mcServer.getFile("crash-reports");
+    @Override
+    public void readData(DataIn data) {
+        id = data.readString();
+    }
 
-			if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_DELETE)) {
-				try {
-					File file = new File(folder, id);
+    @Override
+    public void onMessage(EntityPlayerMP player) {
+        if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_VIEW)) {
+            File folder = player.mcServer.getFile("crash-reports");
 
-					if (file.exists() && file.getParentFile().equals(folder)) {
-						file.delete();
-					}
-				} catch (Exception ex) {
-					if (FTBLibConfig.debugging.print_more_errors) {
-						ex.printStackTrace();
-					}
-				}
-			}
+            if (PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CRASH_REPORTS_DELETE)) {
+                try {
+                    File file = new File(folder, id);
 
-			new MessageViewCrashList(folder).sendTo(player);
-		}
-	}
+                    if (file.exists() && file.getParentFile().equals(folder)) {
+                        file.delete();
+                    }
+                } catch (Exception ex) {
+                    if (FTBLibConfig.debugging.print_more_errors) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            new MessageViewCrashList(folder).sendTo(player);
+        }
+    }
 }

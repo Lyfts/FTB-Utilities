@@ -1,5 +1,11 @@
 package com.feed_the_beast.ftbutilities.net;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.feed_the_beast.ftblib.lib.io.DataIn;
@@ -8,95 +14,89 @@ import com.feed_the_beast.ftblib.lib.net.MessageToServer;
 import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 import com.feed_the_beast.ftblib.lib.util.BlockUtils;
 import com.feed_the_beast.ftbutilities.command.CmdEditNBT;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-
 
 public class MessageEditNBTResponse extends MessageToServer {
-	private NBTTagCompound info, mainNbt;
 
-	public MessageEditNBTResponse() {
-	}
+    private NBTTagCompound info, mainNbt;
 
-	public MessageEditNBTResponse(NBTTagCompound i, NBTTagCompound nbt) {
-		info = i;
-		mainNbt = nbt;
-	}
+    public MessageEditNBTResponse() {}
 
-	@Override
-	public NetworkWrapper getWrapper() {
-		return FTBUtilitiesNetHandler.FILES;
-	}
+    public MessageEditNBTResponse(NBTTagCompound i, NBTTagCompound nbt) {
+        info = i;
+        mainNbt = nbt;
+    }
 
-	@Override
-	public void writeData(DataOut data) {
-		data.writeNBT(info);
-		data.writeNBT(mainNbt);
-	}
+    @Override
+    public NetworkWrapper getWrapper() {
+        return FTBUtilitiesNetHandler.FILES;
+    }
 
-	@Override
-	public void readData(DataIn data) {
-		info = data.readNBT();
-		mainNbt = data.readNBT();
-	}
+    @Override
+    public void writeData(DataOut data) {
+        data.writeNBT(info);
+        data.writeNBT(mainNbt);
+    }
 
-	@Override
-	public void onMessage(EntityPlayerMP player) {
-		if (CmdEditNBT.EDITING.get(player.getGameProfile().getId()).equals(info)) {
-			CmdEditNBT.EDITING.remove(player.getGameProfile().getId());
+    @Override
+    public void readData(DataIn data) {
+        info = data.readNBT();
+        mainNbt = data.readNBT();
+    }
 
-			switch (info.getString("type")) {
-				case "player": {
-					ForgePlayer player1 = Universe.get().getPlayer(info.getString("id"));
+    @Override
+    public void onMessage(EntityPlayerMP player) {
+        if (CmdEditNBT.EDITING.get(player.getGameProfile().getId()).equals(info)) {
+            CmdEditNBT.EDITING.remove(player.getGameProfile().getId());
 
-					if (player1 != null) {
-						player1.setPlayerNBT(mainNbt);
-					}
+            switch (info.getString("type")) {
+                case "player": {
+                    ForgePlayer player1 = Universe.get().getPlayer(info.getString("id"));
 
-					break;
-				}
-				case "block": {
-					int x = info.getInteger("x");
-					int y = info.getInteger("y");
-					int z = info.getInteger("z");
+                    if (player1 != null) {
+                        player1.setPlayerNBT(mainNbt);
+                    }
 
-					if (player.worldObj.getChunkProvider().chunkExists(x << 4, z << 4)) {
-						TileEntity tile = player.worldObj.getTileEntity(x, y, z);
+                    break;
+                }
+                case "block": {
+                    int x = info.getInteger("x");
+                    int y = info.getInteger("y");
+                    int z = info.getInteger("z");
 
-						if (tile != null) {
-							mainNbt.setInteger("x", x);
-							mainNbt.setInteger("y", y);
-							mainNbt.setInteger("z", z);
-							mainNbt.setString("id", info.getString("id"));
-							tile.readFromNBT(mainNbt);
-							tile.markDirty();
-							BlockUtils.notifyBlockUpdate(tile.getWorldObj(), x, y, z, null);
-						}
-					}
+                    if (player.worldObj.getChunkProvider().chunkExists(x << 4, z << 4)) {
+                        TileEntity tile = player.worldObj.getTileEntity(x, y, z);
 
-					break;
-				}
-				case "entity": {
-					Entity entity = player.worldObj.getEntityByID(info.getInteger("id"));
+                        if (tile != null) {
+                            mainNbt.setInteger("x", x);
+                            mainNbt.setInteger("y", y);
+                            mainNbt.setInteger("z", z);
+                            mainNbt.setString("id", info.getString("id"));
+                            tile.readFromNBT(mainNbt);
+                            tile.markDirty();
+                            BlockUtils.notifyBlockUpdate(tile.getWorldObj(), x, y, z, null);
+                        }
+                    }
 
-					if (entity != null) {
-						entity.readFromNBT(mainNbt);
+                    break;
+                }
+                case "entity": {
+                    Entity entity = player.worldObj.getEntityByID(info.getInteger("id"));
 
-						if (entity.isEntityAlive()) {
-							player.worldObj.updateEntityWithOptionalForce(entity, true);
-						}
-					}
+                    if (entity != null) {
+                        entity.readFromNBT(mainNbt);
 
-					break;
-				}
-				case "item": {
-					ItemStack stack = ItemStack.loadItemStackFromNBT(mainNbt);
-					player.setCurrentItemOrArmor(0, stack);
-				}
-			}
-		}
-	}
+                        if (entity.isEntityAlive()) {
+                            player.worldObj.updateEntityWithOptionalForce(entity, true);
+                        }
+                    }
+
+                    break;
+                }
+                case "item": {
+                    ItemStack stack = ItemStack.loadItemStackFromNBT(mainNbt);
+                    player.setCurrentItemOrArmor(0, stack);
+                }
+            }
+        }
+    }
 }

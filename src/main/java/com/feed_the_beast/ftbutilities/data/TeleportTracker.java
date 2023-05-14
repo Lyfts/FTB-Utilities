@@ -3,91 +3,92 @@ package com.feed_the_beast.ftbutilities.data;
 import java.util.Arrays;
 import java.util.Collections;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import com.feed_the_beast.ftblib.lib.math.BlockDimPos;
 import com.feed_the_beast.ftblib.lib.util.INBTSerializable;
 import com.feed_the_beast.ftblib.lib.util.permission.IPermissionHandler;
 import com.feed_the_beast.ftblib.lib.util.permission.PermissionAPI;
 import com.mojang.authlib.GameProfile;
 
-import net.minecraft.nbt.NBTTagCompound;
-
 public class TeleportTracker implements INBTSerializable<NBTTagCompound> {
-	private TeleportLog[] logs;
-	private IPermissionHandler permissionHandler;
 
-	public TeleportTracker() {
-		this(PermissionAPI.getPermissionHandler());
-	}
+    private TeleportLog[] logs;
+    private IPermissionHandler permissionHandler;
 
-	public TeleportTracker(IPermissionHandler permissionHandler) {
-		this.logs = new TeleportLog[TeleportType.values().length];
-		this.permissionHandler = permissionHandler;
-	}
+    public TeleportTracker() {
+        this(PermissionAPI.getPermissionHandler());
+    }
 
-	public void logTeleport(TeleportType teleportType, BlockDimPos from, long worldTime) {
-		logs[teleportType.ordinal()] = new TeleportLog(teleportType, from, worldTime);
-	}
+    public TeleportTracker(IPermissionHandler permissionHandler) {
+        this.logs = new TeleportLog[TeleportType.values().length];
+        this.permissionHandler = permissionHandler;
+    }
 
-	public TeleportLog getLastDeath() {
-		return logs[TeleportType.RESPAWN.ordinal()];
-	}
+    public void logTeleport(TeleportType teleportType, BlockDimPos from, long worldTime) {
+        logs[teleportType.ordinal()] = new TeleportLog(teleportType, from, worldTime);
+    }
 
-	private TeleportLog[] getSortedLogs() {
-		TeleportLog[] toSort = Arrays.stream(logs).filter((l) -> l != null).toArray(TeleportLog[]::new);
-		Arrays.sort(toSort, Collections.reverseOrder());
-		return toSort;
-	}
+    public TeleportLog getLastDeath() {
+        return logs[TeleportType.RESPAWN.ordinal()];
+    }
 
-	// Returns latest available according to permissions.
-	public TeleportLog getLastAvailableLog(GameProfile gameProfile) {
-		for (TeleportLog l : getSortedLogs()) {
-			if (permissionHandler.hasPermission(gameProfile, l.teleportType.getPermission(), null)) {
-				return l;
-			}
-		}
-		return null;
-	}
+    private TeleportLog[] getSortedLogs() {
+        TeleportLog[] toSort = Arrays.stream(logs).filter((l) -> l != null).toArray(TeleportLog[]::new);
+        Arrays.sort(toSort, Collections.reverseOrder());
+        return toSort;
+    }
 
-	public TeleportLog getLastLog() {
-		TeleportLog[] logs = getSortedLogs();
-		return logs[0];
-	}
+    // Returns latest available according to permissions.
+    public TeleportLog getLastAvailableLog(GameProfile gameProfile) {
+        for (TeleportLog l : getSortedLogs()) {
+            if (permissionHandler.hasPermission(gameProfile, l.teleportType.getPermission(), null)) {
+                return l;
+            }
+        }
+        return null;
+    }
 
-	public void clearLog(TeleportType teleportType) {
-		logs[teleportType.ordinal()] = null;
-	}
+    public TeleportLog getLastLog() {
+        TeleportLog[] logs = getSortedLogs();
+        return logs[0];
+    }
 
-	@Override
-	public NBTTagCompound serializeNBT() {
-		NBTTagCompound nbt = new NBTTagCompound();
-		for (int i = 0; i < logs.length; i++) {
-			nbt.setTag(String.valueOf(i), logs[i].serializeNBT());
-		}
-		return nbt;
-	}
+    public void clearLog(TeleportType teleportType) {
+        logs[teleportType.ordinal()] = null;
+    }
 
-	@Override
-	public void deserializeNBT(NBTTagCompound nbt) {
-		if (nbt == null) {
-			return;
-		}
-		for (int i = 0; i < logs.length; i++) {
-			logs[i] = new TeleportLog(nbt.getCompoundTag(String.valueOf(i)));
-		}
-	}
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound nbt = new NBTTagCompound();
+        for (int i = 0; i < logs.length; i++) {
+            nbt.setTag(String.valueOf(i), logs[i].serializeNBT());
+        }
+        return nbt;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("{");
-		for (int i = 0; i < logs.length; i++) {
-			final TeleportLog l = logs[i];
-			builder.append(l.teleportType.toString() + ":" + l.getBlockDimPos());
-			if (i != logs.length - 1) {
-				builder.append(",");
-			}
-		}
-		builder.append("}");
-		return builder.toString();
-	}
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt) {
+        if (nbt == null) {
+            return;
+        }
+        for (int i = 0; i < logs.length; i++) {
+            logs[i] = new TeleportLog(nbt.getCompoundTag(String.valueOf(i)));
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+        for (int i = 0; i < logs.length; i++) {
+            final TeleportLog l = logs[i];
+            builder.append(l.teleportType.toString() + ":" + l.getBlockDimPos());
+            if (i != logs.length - 1) {
+                builder.append(",");
+            }
+        }
+        builder.append("}");
+        return builder.toString();
+    }
 }

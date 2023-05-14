@@ -1,5 +1,19 @@
 package com.feed_the_beast.ftbutilities.handlers;
 
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.stats.StatList;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.event.ServerChatEvent;
+
 import com.feed_the_beast.ftblib.events.universe.UniverseClearCacheEvent;
 import com.feed_the_beast.ftblib.lib.EnumMessageLocation;
 import com.feed_the_beast.ftblib.lib.config.ConfigEnum;
@@ -20,240 +34,232 @@ import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesPlayerData;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesUniverseData;
 import com.feed_the_beast.ftbutilities.net.MessageUpdatePlayTime;
-import com.feed_the_beast.ftbutilities.net.MessageUpdateTabName;
 import com.feed_the_beast.ftbutilities.ranks.Ranks;
 
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemSaddle;
-import net.minecraft.stats.StatList;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.event.ServerChatEvent;
-
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * @author LatvianModder
  */
 public class FTBUtilitiesServerEventHandler {
-	public static final FTBUtilitiesServerEventHandler INST = new FTBUtilitiesServerEventHandler();
-	private static final ResourceLocation AFK_ID = new ResourceLocation(FTBUtilities.MOD_ID, "afk");
-	private static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
-	private static final String STRIKETHROUGH_REPLACE = "&m$1&m";
-	private static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*?)\\*\\*|__(.*?)__");
-	private static final String BOLD_REPLACE = "&l$1$2&l";
-	private static final Pattern ITALIC_PATTERN = Pattern.compile("\\*(.*?)\\*|_(.*?)_");
-	private static final String ITALIC_REPLACE = "&o$1$2&o";
 
-	@SubscribeEvent
-	public void onCacheCleared(UniverseClearCacheEvent event) {
-		if (Ranks.INSTANCE != null) {
-			Ranks.INSTANCE.clearCache();
-		}
-	}
+    public static final FTBUtilitiesServerEventHandler INST = new FTBUtilitiesServerEventHandler();
+    private static final ResourceLocation AFK_ID = new ResourceLocation(FTBUtilities.MOD_ID, "afk");
+    private static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
+    private static final String STRIKETHROUGH_REPLACE = "&m$1&m";
+    private static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*?)\\*\\*|__(.*?)__");
+    private static final String BOLD_REPLACE = "&l$1$2&l";
+    private static final Pattern ITALIC_PATTERN = Pattern.compile("\\*(.*?)\\*|_(.*?)_");
+    private static final String ITALIC_REPLACE = "&o$1$2&o";
 
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onServerChatEvent(ServerChatEvent event) {
-		if (!FTBUtilitiesConfig.ranks.override_chat || !Ranks.isActive()) {
-			return;
-		}
+    @SubscribeEvent
+    public void onCacheCleared(UniverseClearCacheEvent event) {
+        if (Ranks.INSTANCE != null) {
+            Ranks.INSTANCE.clearCache();
+        }
+    }
 
-		EntityPlayerMP player = event.player;
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onServerChatEvent(ServerChatEvent event) {
+        if (!FTBUtilitiesConfig.ranks.override_chat || !Ranks.isActive()) {
+            return;
+        }
 
-		if (!PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CHAT_SPEAK)
-				|| NBTUtils.getPersistedData(player, false).getBoolean(FTBUtilitiesPlayerData.TAG_MUTED)) {
-			player.addChatComponentMessage(
-					StringUtils.color(FTBUtilities.lang(player, "commands.mute.muted"), EnumChatFormatting.RED));
-			event.setCanceled(true);
-			return;
-		}
+        EntityPlayerMP player = event.player;
 
-		IChatComponent main = new ChatComponentText("");
-		FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(Universe.get().getPlayer(player));
-		main.appendSibling(data.getNameForChat(player));
+        if (!PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CHAT_SPEAK)
+                || NBTUtils.getPersistedData(player, false).getBoolean(FTBUtilitiesPlayerData.TAG_MUTED)) {
+            player.addChatComponentMessage(
+                    StringUtils.color(FTBUtilities.lang(player, "commands.mute.muted"), EnumChatFormatting.RED));
+            event.setCanceled(true);
+            return;
+        }
 
-		String message = event.message.trim();
+        IChatComponent main = new ChatComponentText("");
+        FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(Universe.get().getPlayer(player));
+        main.appendSibling(data.getNameForChat(player));
 
-		boolean b = false;
+        String message = event.message.trim();
 
-		if (!message.contains("https://") && !message.contains("http://")
-				&& PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CHAT_FORMATTING)) {
-			for (Map.Entry<String, String> entry : FTBUtilitiesCommon.KAOMOJIS.entrySet()) {
-				message = message.replace(entry.getValue(), "<emoji:" + entry.getKey() + ">");
-			}
+        boolean b = false;
 
-			b = !message.equals(message = STRIKETHROUGH_PATTERN.matcher(message).replaceAll(STRIKETHROUGH_REPLACE)) | b;
-			b = !message.equals(message = BOLD_PATTERN.matcher(message).replaceAll(BOLD_REPLACE)) | b;
-			b = !message.equals(message = ITALIC_PATTERN.matcher(message).replaceAll(ITALIC_REPLACE)) | b;
+        if (!message.contains("https://") && !message.contains("http://")
+                && PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.CHAT_FORMATTING)) {
+            for (Map.Entry<String, String> entry : FTBUtilitiesCommon.KAOMOJIS.entrySet()) {
+                message = message.replace(entry.getValue(), "<emoji:" + entry.getKey() + ">");
+            }
 
-			for (Map.Entry<String, String> entry : FTBUtilitiesCommon.KAOMOJIS.entrySet()) {
-				message = message.replace("<emoji:" + entry.getKey() + ">", entry.getValue());
-			}
-		}
+            b = !message.equals(message = STRIKETHROUGH_PATTERN.matcher(message).replaceAll(STRIKETHROUGH_REPLACE)) | b;
+            b = !message.equals(message = BOLD_PATTERN.matcher(message).replaceAll(BOLD_REPLACE)) | b;
+            b = !message.equals(message = ITALIC_PATTERN.matcher(message).replaceAll(ITALIC_REPLACE)) | b;
 
-		IChatComponent text;
+            for (Map.Entry<String, String> entry : FTBUtilitiesCommon.KAOMOJIS.entrySet()) {
+                message = message.replace("<emoji:" + entry.getKey() + ">", entry.getValue());
+            }
+        }
 
-		if (b) {
-			text = TextComponentParser.parse(message, null);
-		} else {
-			text = ForgeHooks.newChatWithLinks(message);
-		}
+        IChatComponent text;
 
-		EnumChatFormatting colortf = (EnumChatFormatting) ((ConfigEnum) RankConfigAPI.get(player,
-				FTBUtilitiesPermissions.CHAT_TEXT_COLOR)).getValue();
+        if (b) {
+            text = TextComponentParser.parse(message, null);
+        } else {
+            text = ForgeHooks.newChatWithLinks(message);
+        }
 
-		if (colortf != EnumChatFormatting.WHITE) {
-			text.getChatStyle().setColor(colortf);
-		}
+        EnumChatFormatting colortf = (EnumChatFormatting) ((ConfigEnum) RankConfigAPI
+                .get(player, FTBUtilitiesPermissions.CHAT_TEXT_COLOR)).getValue();
 
-		if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_BOLD,
-				false) == Event.Result.ALLOW) {
-			text.getChatStyle().setBold(true);
-		}
+        if (colortf != EnumChatFormatting.WHITE) {
+            text.getChatStyle().setColor(colortf);
+        }
 
-		if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_ITALIC,
-				false) == Event.Result.ALLOW) {
-			text.getChatStyle().setItalic(true);
-		}
+        if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_BOLD, false)
+                == Event.Result.ALLOW) {
+            text.getChatStyle().setBold(true);
+        }
 
-		if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_UNDERLINED,
-				false) == Event.Result.ALLOW) {
-			text.getChatStyle().setUnderlined(true);
-		}
+        if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_ITALIC, false)
+                == Event.Result.ALLOW) {
+            text.getChatStyle().setItalic(true);
+        }
 
-		if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_STRIKETHROUGH,
-				false) == Event.Result.ALLOW) {
-			text.getChatStyle().setStrikethrough(true);
-		}
+        if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_UNDERLINED, false)
+                == Event.Result.ALLOW) {
+            text.getChatStyle().setUnderlined(true);
+        }
 
-		if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_OBFUSCATED,
-				false) == Event.Result.ALLOW) {
-			text.getChatStyle().setObfuscated(true);
-		}
+        if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_STRIKETHROUGH, false)
+                == Event.Result.ALLOW) {
+            text.getChatStyle().setStrikethrough(true);
+        }
 
-		main.appendSibling(text);
-//		event.component.appendSibling(main);
-		event.component = new ChatComponentTranslation("translation.test.args", data.getNameForChat(player), text);
-//		event.setComponent(main);
-	}
+        if (Ranks.INSTANCE.getPermissionResult(player, FTBUtilitiesPermissions.CHAT_TEXT_OBFUSCATED, false)
+                == Event.Result.ALLOW) {
+            text.getChatStyle().setObfuscated(true);
+        }
 
-	@SubscribeEvent
-	public void onServerTick(TickEvent.ServerTickEvent event) {
-		if (!Universe.loaded()) {
-			return;
-		}
+        main.appendSibling(text);
+        // event.component.appendSibling(main);
+        event.component = new ChatComponentTranslation("translation.test.args", data.getNameForChat(player), text);
+        // event.setComponent(main);
+    }
 
-		Universe universe = Universe.get();
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (!Universe.loaded()) {
+            return;
+        }
 
-		long now = System.currentTimeMillis();
+        Universe universe = Universe.get();
 
-		if (event.phase == TickEvent.Phase.START) {
-			if (ClaimedChunks.isActive()) {
-				ClaimedChunks.instance.update(universe, now);
-			}
-		} else {
-			EntityPlayerMP playerToKickForAfk = null; // Do one at time, easier
-			boolean afkEnabled = FTBUtilitiesConfig.afk.isEnabled(universe.server);
+        long now = System.currentTimeMillis();
 
-			for (EntityPlayerMP player : (List<EntityPlayerMP>) universe.server.getConfigurationManager().playerEntityList) {
-				if (ServerUtils.isFake(player)) {
-					continue;
-				}
+        if (event.phase == TickEvent.Phase.START) {
+            if (ClaimedChunks.isActive()) {
+                ClaimedChunks.instance.update(universe, now);
+            }
+        } else {
+            EntityPlayerMP playerToKickForAfk = null; // Do one at time, easier
+            boolean afkEnabled = FTBUtilitiesConfig.afk.isEnabled(universe.server);
 
-				boolean fly = player.capabilities.allowFlying;
+            for (EntityPlayerMP player : (List<EntityPlayerMP>) universe.server
+                    .getConfigurationManager().playerEntityList) {
+                if (ServerUtils.isFake(player)) {
+                    continue;
+                }
 
-				if (!player.capabilities.isCreativeMode
-						&& NBTUtils.getPersistedData(player, false).getBoolean(FTBUtilitiesPlayerData.TAG_FLY)) {
-					player.capabilities.allowFlying = true;
-				}
+                boolean fly = player.capabilities.allowFlying;
 
-				if (fly != player.capabilities.allowFlying) {
-					player.sendPlayerAbilities();
-				}
+                if (!player.capabilities.isCreativeMode
+                        && NBTUtils.getPersistedData(player, false).getBoolean(FTBUtilitiesPlayerData.TAG_FLY)) {
+                    player.capabilities.allowFlying = true;
+                }
 
-				if (afkEnabled) {
-					FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(universe.getPlayer(player));
-					boolean prevIsAfk = data.afkTime >= FTBUtilitiesConfig.afk.getNotificationTimer();
-					data.afkTime = System.currentTimeMillis() - player.func_154331_x();
-					boolean isAFK = data.afkTime >= FTBUtilitiesConfig.afk.getNotificationTimer();
+                if (fly != player.capabilities.allowFlying) {
+                    player.sendPlayerAbilities();
+                }
 
-					if (prevIsAfk != isAFK) {
-						for (EntityPlayerMP player1 : (List<EntityPlayerMP>) universe.server.getConfigurationManager().playerEntityList) {
-							EnumMessageLocation location = FTBUtilitiesPlayerData.get(universe.getPlayer(player1))
-									.getAFKMessageLocation();
+                if (afkEnabled) {
+                    FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(universe.getPlayer(player));
+                    boolean prevIsAfk = data.afkTime >= FTBUtilitiesConfig.afk.getNotificationTimer();
+                    data.afkTime = System.currentTimeMillis() - player.func_154331_x();
+                    boolean isAFK = data.afkTime >= FTBUtilitiesConfig.afk.getNotificationTimer();
 
-							if (location != EnumMessageLocation.OFF) {
-								IChatComponent component = FTBUtilities.lang(player1,
-										isAFK ? "permission.ftbutilities.afk.timer.is_afk"
-												: "permission.ftbutilities.afk.timer.isnt_afk",
-										player.getDisplayName());
-								component.getChatStyle().setColor(EnumChatFormatting.GRAY);
+                    if (prevIsAfk != isAFK) {
+                        for (EntityPlayerMP player1 : (List<EntityPlayerMP>) universe.server
+                                .getConfigurationManager().playerEntityList) {
+                            EnumMessageLocation location = FTBUtilitiesPlayerData.get(universe.getPlayer(player1))
+                                    .getAFKMessageLocation();
 
-								if (location == EnumMessageLocation.CHAT) {
-									player1.addChatMessage(component);
-								} else {
-									Notification.of(AFK_ID, component).send(universe.server, player1);
-								}
-							}
-						}
+                            if (location != EnumMessageLocation.OFF) {
+                                IChatComponent component = FTBUtilities.lang(
+                                        player1,
+                                        isAFK ? "permission.ftbutilities.afk.timer.is_afk"
+                                                : "permission.ftbutilities.afk.timer.isnt_afk",
+                                        player.getDisplayName());
+                                component.getChatStyle().setColor(EnumChatFormatting.GRAY);
 
-						FTBUtilities.LOGGER.info(player.getDisplayName() + (isAFK ? " is now AFK" : " is no longer AFK"));
+                                if (location == EnumMessageLocation.CHAT) {
+                                    player1.addChatMessage(component);
+                                } else {
+                                    Notification.of(AFK_ID, component).send(universe.server, player1);
+                                }
+                            }
+                        }
 
-//						if (FTBUtilitiesConfig.chat.replace_tab_names) {
-//							new MessageUpdateTabName(player).sendToAll();
-//						}
-					}
+                        FTBUtilities.LOGGER
+                                .info(player.getDisplayName() + (isAFK ? " is now AFK" : " is no longer AFK"));
 
-					if (playerToKickForAfk == null) {
-						long maxTime = RankConfigAPI
-								.get(player.mcServer, player.getGameProfile(), FTBUtilitiesPermissions.AFK_TIMER)
-								.getTimer().millis();
+                        // if (FTBUtilitiesConfig.chat.replace_tab_names) {
+                        // new MessageUpdateTabName(player).sendToAll();
+                        // }
+                    }
 
-						if (maxTime > 0L && data.afkTime >= maxTime) {
-							playerToKickForAfk = player;
-						}
-					}
-				}
-			}
+                    if (playerToKickForAfk == null) {
+                        long maxTime = RankConfigAPI
+                                .get(player.mcServer, player.getGameProfile(), FTBUtilitiesPermissions.AFK_TIMER)
+                                .getTimer().millis();
 
-			if (playerToKickForAfk != null && playerToKickForAfk.playerNetServerHandler != null) {
-				playerToKickForAfk.playerNetServerHandler.onDisconnect(new ChatComponentTranslation("multiplayer.disconnect.idling"));
-			}
+                        if (maxTime > 0L && data.afkTime >= maxTime) {
+                            playerToKickForAfk = player;
+                        }
+                    }
+                }
+            }
 
-			if (FTBUtilitiesUniverseData.shutdownTime > 0L && FTBUtilitiesUniverseData.shutdownTime - now <= 0) {
-				CmdShutdown.shutdown(universe.server);
-			}
-		}
-	}
+            if (playerToKickForAfk != null && playerToKickForAfk.playerNetServerHandler != null) {
+                playerToKickForAfk.playerNetServerHandler
+                        .onDisconnect(new ChatComponentTranslation("multiplayer.disconnect.idling"));
+            }
 
-	@SubscribeEvent
-	public void onWorldTick(TickEvent.WorldTickEvent event) {
-		if (!event.world.isRemote && event.phase == TickEvent.Phase.START
-				&& event.world.provider.dimensionId == FTBUtilitiesConfig.world.spawn_dimension) {
-			if (FTBUtilitiesConfig.world.forced_spawn_dimension_time != -1) {
-				event.world.setWorldTime(FTBUtilitiesConfig.world.forced_spawn_dimension_time);
-			}
+            if (FTBUtilitiesUniverseData.shutdownTime > 0L && FTBUtilitiesUniverseData.shutdownTime - now <= 0) {
+                CmdShutdown.shutdown(universe.server);
+            }
+        }
+    }
 
-			if (FTBUtilitiesConfig.world.forced_spawn_dimension_weather != -1) {
-				event.world.getWorldInfo().setRaining(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 1);
-				event.world.getWorldInfo().setThundering(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 2);
-			}
+    @SubscribeEvent
+    public void onWorldTick(TickEvent.WorldTickEvent event) {
+        if (!event.world.isRemote && event.phase == TickEvent.Phase.START
+                && event.world.provider.dimensionId == FTBUtilitiesConfig.world.spawn_dimension) {
+            if (FTBUtilitiesConfig.world.forced_spawn_dimension_time != -1) {
+                event.world.setWorldTime(FTBUtilitiesConfig.world.forced_spawn_dimension_time);
+            }
 
-			if (FTBUtilitiesConfig.world.show_playtime && event.world.getTotalWorldTime() % 20L == 7L) {
-				for (EntityPlayerMP player : (List<EntityPlayerMP>) event.world.playerEntities) {
-					new MessageUpdatePlayTime(player.func_147099_x().writeStat(StatList.minutesPlayedStat)).sendTo(player);
-				}
-			}
-		}
-	}
+            if (FTBUtilitiesConfig.world.forced_spawn_dimension_weather != -1) {
+                event.world.getWorldInfo().setRaining(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 1);
+                event.world.getWorldInfo().setThundering(FTBUtilitiesConfig.world.forced_spawn_dimension_weather >= 2);
+            }
+
+            if (FTBUtilitiesConfig.world.show_playtime && event.world.getTotalWorldTime() % 20L == 7L) {
+                for (EntityPlayerMP player : (List<EntityPlayerMP>) event.world.playerEntities) {
+                    new MessageUpdatePlayTime(player.func_147099_x().writeStat(StatList.minutesPlayedStat))
+                            .sendTo(player);
+                }
+            }
+        }
+    }
 }

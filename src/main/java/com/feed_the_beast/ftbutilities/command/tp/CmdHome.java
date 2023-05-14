@@ -3,6 +3,15 @@ package com.feed_the_beast.ftbutilities.command.tp;
 import java.util.Collection;
 import java.util.List;
 
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
@@ -15,103 +24,100 @@ import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesPlayerData;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.HoverEvent;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-
 public class CmdHome extends CmdBase {
-	public CmdHome() {
-		super("home", Level.ALL);
-	}
 
-	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-		if (args.length == 1) {
-			return getListOfStringsFromIterableMatchingLastWord(args,
-					FTBUtilitiesPlayerData.get(Universe.get().getPlayer(sender)).homes.list());
-		}
+    public CmdHome() {
+        super("home", Level.ALL);
+    }
 
-		return super.addTabCompletionOptions(sender, args);
-	}
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return getListOfStringsFromIterableMatchingLastWord(
+                    args,
+                    FTBUtilitiesPlayerData.get(Universe.get().getPlayer(sender)).homes.list());
+        }
 
-	@Override
-	public boolean isUsernameIndex(String[] args, int index) {
-		return index == 1;
-	}
+        return super.addTabCompletionOptions(sender, args);
+    }
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args0) throws CommandException {
-		if (args0.length == 0) {
-			args0 = new String[] { "home" };
-		}
+    @Override
+    public boolean isUsernameIndex(String[] args, int index) {
+        return index == 1;
+    }
 
-		String[] args = args0;
+    @Override
+    public void processCommand(ICommandSender sender, String[] args0) throws CommandException {
+        if (args0.length == 0) {
+            args0 = new String[] { "home" };
+        }
 
-		if (args[0].equals("list")) {
-			ForgePlayer p = CommandUtils.getSelfOrOther(sender, args, 1, FTBUtilitiesPermissions.HOMES_LIST_OTHER);
-			FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(p);
+        String[] args = args0;
 
-			Collection<String> list = data.homes.list();
-			IChatComponent msg = p.getDisplayName().appendText(
-					": " + list.size() + " / " + p.getRankConfig(FTBUtilitiesPermissions.HOMES_MAX).getInt() + ": ");
+        if (args[0].equals("list")) {
+            ForgePlayer p = CommandUtils.getSelfOrOther(sender, args, 1, FTBUtilitiesPermissions.HOMES_LIST_OTHER);
+            FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(p);
 
-			if (!list.isEmpty()) {
-				boolean first = true;
+            Collection<String> list = data.homes.list();
+            IChatComponent msg = p.getDisplayName().appendText(
+                    ": " + list.size() + " / " + p.getRankConfig(FTBUtilitiesPermissions.HOMES_MAX).getInt() + ": ");
 
-				for (String s : list) {
-					if (first) {
-						first = false;
-					} else {
-						msg.appendText(", ");
-					}
+            if (!list.isEmpty()) {
+                boolean first = true;
 
-					IChatComponent h = new ChatComponentText(s);
-					h.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-							new ChatComponentText("/home " + s + " " + p.getName())));
-					h.getChatStyle().setChatClickEvent(
-							new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + s + " " + p.getName()));
-					h.getChatStyle().setColor(EnumChatFormatting.GOLD);
-					msg.appendSibling(h);
-				}
-			}
+                for (String s : list) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        msg.appendText(", ");
+                    }
 
-			sender.addChatMessage(msg);
+                    IChatComponent h = new ChatComponentText(s);
+                    h.getChatStyle().setChatHoverEvent(
+                            new HoverEvent(
+                                    HoverEvent.Action.SHOW_TEXT,
+                                    new ChatComponentText("/home " + s + " " + p.getName())));
+                    h.getChatStyle().setChatClickEvent(
+                            new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + s + " " + p.getName()));
+                    h.getChatStyle().setColor(EnumChatFormatting.GOLD);
+                    msg.appendSibling(h);
+                }
+            }
 
-			return;
-		} else if (args[0].equals("list_all")) {
-			for (ForgePlayer p : Universe.get().getPlayers()) {
-				processCommand(sender, new String[] { "list", p.getName() });
-			}
+            sender.addChatMessage(msg);
 
-			return;
-		}
+            return;
+        } else if (args[0].equals("list_all")) {
+            for (ForgePlayer p : Universe.get().getPlayers()) {
+                processCommand(sender, new String[] { "list", p.getName() });
+            }
 
-		ForgePlayer p = CommandUtils.getSelfOrOther(sender, args, 1, FTBUtilitiesPermissions.HOMES_TELEPORT_OTHER);
-		FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(p);
-		BlockDimPos pos = data.homes.get(args[0]);
+            return;
+        }
 
-		if (pos == null) {
-			throw FTBUtilities.error(sender, "ftbutilities.lang.homes.not_set", args[0]);
-		}
+        ForgePlayer p = CommandUtils.getSelfOrOther(sender, args, 1, FTBUtilitiesPermissions.HOMES_TELEPORT_OTHER);
+        FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(p);
+        BlockDimPos pos = data.homes.get(args[0]);
 
-		EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+        if (pos == null) {
+            throw FTBUtilities.error(sender, "ftbutilities.lang.homes.not_set", args[0]);
+        }
 
-		if (player.dimension != pos.dim
-				&& !PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.HOMES_CROSS_DIM)) {
-			throw FTBUtilities.error(sender, "ftbutilities.lang.homes.cross_dim");
-		}
+        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
 
-		data.checkTeleportCooldown(sender, FTBUtilitiesPlayerData.Timer.HOME);
-		FTBUtilitiesPlayerData.Timer.HOME
-				.teleport(player, playerMP -> pos.teleporter(),
-						universe -> Notification
-								.of(FTBUtilitiesNotifications.TELEPORT,
-										FTBUtilities.lang(sender, "ftbutilities.lang.warps.tp", args[0]))
-								.send(player.mcServer, player));
-	}
+        if (player.dimension != pos.dim
+                && !PermissionAPI.hasPermission(player, FTBUtilitiesPermissions.HOMES_CROSS_DIM)) {
+            throw FTBUtilities.error(sender, "ftbutilities.lang.homes.cross_dim");
+        }
+
+        data.checkTeleportCooldown(sender, FTBUtilitiesPlayerData.Timer.HOME);
+        FTBUtilitiesPlayerData.Timer.HOME.teleport(
+                player,
+                playerMP -> pos.teleporter(),
+                universe -> Notification
+                        .of(
+                                FTBUtilitiesNotifications.TELEPORT,
+                                FTBUtilities.lang(sender, "ftbutilities.lang.warps.tp", args[0]))
+                        .send(player.mcServer, player));
+    }
 }

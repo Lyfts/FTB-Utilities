@@ -12,80 +12,70 @@ import cpw.mods.fml.common.eventhandler.Cancelable;
 /**
  * @author LatvianModder
  */
-public abstract class ChunkModifiedEvent extends FTBUtilitiesEvent
-{
-	private final ClaimedChunk chunk;
-	private final ForgePlayer player;
+public abstract class ChunkModifiedEvent extends FTBUtilitiesEvent {
 
-	public ChunkModifiedEvent(ClaimedChunk c, @Nullable ForgePlayer p)
-	{
-		chunk = c;
-		player = p;
-	}
+    private final ClaimedChunk chunk;
+    private final ForgePlayer player;
 
-	public ClaimedChunk getChunk()
-	{
-		return chunk;
-	}
+    public ChunkModifiedEvent(ClaimedChunk c, @Nullable ForgePlayer p) {
+        chunk = c;
+        player = p;
+    }
 
-	@Nullable
-	public ForgePlayer getPlayer()
-	{
-		return player;
-	}
+    public ClaimedChunk getChunk() {
+        return chunk;
+    }
 
-	@Cancelable
-	public static class Claim extends FTBUtilitiesEvent
-	{
-		private final ChunkDimPos chunkDimPos;
-		private final ForgePlayer player;
+    @Nullable
+    public ForgePlayer getPlayer() {
+        return player;
+    }
 
-		public Claim(ChunkDimPos c, ForgePlayer p)
-		{
-			chunkDimPos = c;
-			player = p;
-		}
+    @Cancelable
+    public static class Claim extends FTBUtilitiesEvent {
 
-		public ChunkDimPos getChunkDimPos()
-		{
-			return chunkDimPos;
-		}
+        private final ChunkDimPos chunkDimPos;
+        private final ForgePlayer player;
 
-		public ForgePlayer getPlayer()
-		{
-			return player;
-		}
-	}
+        public Claim(ChunkDimPos c, ForgePlayer p) {
+            chunkDimPos = c;
+            player = p;
+        }
 
-	public static class Claimed extends ChunkModifiedEvent
-	{
-		public Claimed(ClaimedChunk c, @Nullable ForgePlayer p)
-		{
-			super(c, p);
-		}
-	}
+        public ChunkDimPos getChunkDimPos() {
+            return chunkDimPos;
+        }
 
-	public static class Unclaimed extends ChunkModifiedEvent
-	{
-		public Unclaimed(ClaimedChunk c, @Nullable ForgePlayer p)
-		{
-			super(c, p);
-		}
-	}
+        public ForgePlayer getPlayer() {
+            return player;
+        }
+    }
 
-	public static class Loaded extends ChunkModifiedEvent
-	{
-		public Loaded(ClaimedChunk c, @Nullable ForgePlayer p)
-		{
-			super(c, p);
-		}
-	}
+    public static class Claimed extends ChunkModifiedEvent {
 
-	public static class Unloaded extends ChunkModifiedEvent
-	{
-		public Unloaded(ClaimedChunk c, @Nullable ForgePlayer p)
-		{
-			super(c, p);
-		}
-	}
+        public Claimed(ClaimedChunk c, @Nullable ForgePlayer p) {
+            super(c, p);
+        }
+    }
+
+    public static class Unclaimed extends ChunkModifiedEvent {
+
+        public Unclaimed(ClaimedChunk c, @Nullable ForgePlayer p) {
+            super(c, p);
+        }
+    }
+
+    public static class Loaded extends ChunkModifiedEvent {
+
+        public Loaded(ClaimedChunk c, @Nullable ForgePlayer p) {
+            super(c, p);
+        }
+    }
+
+    public static class Unloaded extends ChunkModifiedEvent {
+
+        public Unloaded(ClaimedChunk c, @Nullable ForgePlayer p) {
+            super(c, p);
+        }
+    }
 }

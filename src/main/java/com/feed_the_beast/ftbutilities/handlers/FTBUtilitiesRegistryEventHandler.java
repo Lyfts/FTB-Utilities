@@ -1,5 +1,12 @@
 package com.feed_the_beast.ftbutilities.handlers;
 
+import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.GameRules;
+
 import com.feed_the_beast.ftblib.events.FTBLibPreInitRegistryEvent;
 import com.feed_the_beast.ftblib.lib.config.ConfigGroup;
 import com.feed_the_beast.ftblib.lib.config.IConfigCallback;
@@ -16,91 +23,102 @@ import com.feed_the_beast.ftbutilities.net.MessageViewCrashList;
 import com.feed_the_beast.ftbutilities.ranks.Ranks;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.item.Item;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.GameRules;
-
-import java.io.File;
 
 /**
  * @author LatvianModder
  */
 public class FTBUtilitiesRegistryEventHandler {
-	public static final FTBUtilitiesRegistryEventHandler INST = new FTBUtilitiesRegistryEventHandler();
-	@SubscribeEvent
-	public void onFTBLibPreInitRegistry(FTBLibPreInitRegistryEvent event) {
-		FTBLibPreInitRegistryEvent.Registry registry = event.getRegistry();
-		registry.registerServerReloadHandler(new ResourceLocation(FTBUtilities.MOD_ID, "ranks"),
-				reloadEvent -> Ranks.INSTANCE.reload());
-		registry.registerServerReloadHandler(new ResourceLocation(FTBUtilities.MOD_ID, "badges"),
-				reloadEvent -> FTBUtilitiesUniverseData.clearBadgeCache());
 
-		registry.registerSyncData(FTBUtilities.MOD_ID, new FTBUtilitiesSyncData());
+    public static final FTBUtilitiesRegistryEventHandler INST = new FTBUtilitiesRegistryEventHandler();
 
-		registry.registerAdminPanelAction(
-				new AdminPanelAction(FTBUtilities.MOD_ID, "crash_reports", ItemIcon.getItemIcon(Item.getItemById(339)), 0) {
-					@Override
-					public Type getType(ForgePlayer player, NBTTagCompound data) {
-						return Type.fromBoolean(player.hasPermission(FTBUtilitiesPermissions.CRASH_REPORTS_VIEW));
-					}
+    @SubscribeEvent
+    public void onFTBLibPreInitRegistry(FTBLibPreInitRegistryEvent event) {
+        FTBLibPreInitRegistryEvent.Registry registry = event.getRegistry();
+        registry.registerServerReloadHandler(
+                new ResourceLocation(FTBUtilities.MOD_ID, "ranks"),
+                reloadEvent -> Ranks.INSTANCE.reload());
+        registry.registerServerReloadHandler(
+                new ResourceLocation(FTBUtilities.MOD_ID, "badges"),
+                reloadEvent -> FTBUtilitiesUniverseData.clearBadgeCache());
 
-					@Override
-					public void onAction(ForgePlayer player, NBTTagCompound data) {
-						new MessageViewCrashList(player.team.universe.server.getFile("crash-reports")).sendTo(player.getPlayer());
-					}
-				});
+        registry.registerSyncData(FTBUtilities.MOD_ID, new FTBUtilitiesSyncData());
 
-		registry.registerAdminPanelAction(new AdminPanelAction(FTBUtilities.MOD_ID, "edit_world", GuiIcons.GLOBE, 0) {
-			@Override
-			public Type getType(ForgePlayer player, NBTTagCompound data) {
-				return Type.fromBoolean(player.hasPermission(FTBUtilitiesPermissions.EDIT_WORLD_GAMERULES));
-			}
+        registry.registerAdminPanelAction(
+                new AdminPanelAction(
+                        FTBUtilities.MOD_ID,
+                        "crash_reports",
+                        ItemIcon.getItemIcon(Item.getItemById(339)),
+                        0) {
 
-			@Override
-			public void onAction(ForgePlayer player, NBTTagCompound data) {
-				ConfigGroup main = ConfigGroup.newGroup("edit_world");
-				main.setDisplayName(new ChatComponentTranslation("admin_panel.ftbutilities.edit_world"));
+                    @Override
+                    public Type getType(ForgePlayer player, NBTTagCompound data) {
+                        return Type.fromBoolean(player.hasPermission(FTBUtilitiesPermissions.CRASH_REPORTS_VIEW));
+                    }
 
-				if (player.hasPermission(FTBUtilitiesPermissions.EDIT_WORLD_GAMERULES)) {
-					ConfigGroup gamerules = main.getGroup("gamerules");
-					gamerules.setDisplayName(new ChatComponentTranslation("gamerules"));
+                    @Override
+                    public void onAction(ForgePlayer player, NBTTagCompound data) {
+                        new MessageViewCrashList(player.team.universe.server.getFile("crash-reports"))
+                                .sendTo(player.getPlayer());
+                    }
+                });
 
-					GameRules rules = player.team.universe.world.getGameRules();
+        registry.registerAdminPanelAction(new AdminPanelAction(FTBUtilities.MOD_ID, "edit_world", GuiIcons.GLOBE, 0) {
 
-					for (String key : rules.getRules()) {
-						String value = rules.getGameRuleStringValue(key);
+            @Override
+            public Type getType(ForgePlayer player, NBTTagCompound data) {
+                return Type.fromBoolean(player.hasPermission(FTBUtilitiesPermissions.EDIT_WORLD_GAMERULES));
+            }
 
-						if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-							gamerules.addBool(
-									key,
-									() -> rules.getGameRuleBooleanValue(key),
-									v -> rules.setOrCreateGameRule(key, Boolean.toString(v)), false)
-									.setDisplayName(new ChatComponentText(StringUtils.camelCaseToWords(key)));
-						} else {
-							try {
-								Integer.parseInt(value);
-								gamerules.addInt(
-										key,
-										() -> Integer.parseInt(rules.getGameRuleStringValue(key)),
-										v -> rules.setOrCreateGameRule(key, Integer.toString(v)), 1, 1, Integer.MAX_VALUE)
-										.setDisplayName(new ChatComponentText(StringUtils.camelCaseToWords(key)));
-							} catch (NumberFormatException ignored) {
-								gamerules.addString(
-										key,
-										() -> rules.getGameRuleStringValue(key),
-										v -> rules.setOrCreateGameRule(key, v), "")
-										.setDisplayName(new ChatComponentText(StringUtils.camelCaseToWords(key)));
-							}
-						}
-					}
-				}
+            @Override
+            public void onAction(ForgePlayer player, NBTTagCompound data) {
+                ConfigGroup main = ConfigGroup.newGroup("edit_world");
+                main.setDisplayName(new ChatComponentTranslation("admin_panel.ftbutilities.edit_world"));
 
-				FTBLibAPI.editServerConfig(player.getPlayer(), main, IConfigCallback.DEFAULT);
-			}
+                if (player.hasPermission(FTBUtilitiesPermissions.EDIT_WORLD_GAMERULES)) {
+                    ConfigGroup gamerules = main.getGroup("gamerules");
+                    gamerules.setDisplayName(new ChatComponentTranslation("gamerules"));
 
-		});
-	}
+                    GameRules rules = player.team.universe.world.getGameRules();
+
+                    for (String key : rules.getRules()) {
+                        String value = rules.getGameRuleStringValue(key);
+
+                        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                            gamerules
+                                    .addBool(
+                                            key,
+                                            () -> rules.getGameRuleBooleanValue(key),
+                                            v -> rules.setOrCreateGameRule(key, Boolean.toString(v)),
+                                            false)
+                                    .setDisplayName(new ChatComponentText(StringUtils.camelCaseToWords(key)));
+                        } else {
+                            try {
+                                Integer.parseInt(value);
+                                gamerules
+                                        .addInt(
+                                                key,
+                                                () -> Integer.parseInt(rules.getGameRuleStringValue(key)),
+                                                v -> rules.setOrCreateGameRule(key, Integer.toString(v)),
+                                                1,
+                                                1,
+                                                Integer.MAX_VALUE)
+                                        .setDisplayName(new ChatComponentText(StringUtils.camelCaseToWords(key)));
+                            } catch (NumberFormatException ignored) {
+                                gamerules
+                                        .addString(
+                                                key,
+                                                () -> rules.getGameRuleStringValue(key),
+                                                v -> rules.setOrCreateGameRule(key, v),
+                                                "")
+                                        .setDisplayName(new ChatComponentText(StringUtils.camelCaseToWords(key)));
+                            }
+                        }
+                    }
+                }
+
+                FTBLibAPI.editServerConfig(player.getPlayer(), main, IConfigCallback.DEFAULT);
+            }
+
+        });
+    }
 }

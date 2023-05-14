@@ -1,5 +1,7 @@
 package com.feed_the_beast.ftbutilities.command;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
@@ -7,146 +9,144 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
-import javax.annotation.Nullable;
-
 public class InvSeeInventory implements IInventory {
-	private final IInventory inventory;
-	private final EntityPlayerMP player;
 
-	public InvSeeInventory(IInventory inv, @Nullable EntityPlayerMP ep) {
-		inventory = inv;
-		player = ep;
-	}
+    private final IInventory inventory;
+    private final EntityPlayerMP player;
 
-	@Override
-	public int getSizeInventory() {
-		return 45;
-	}
+    public InvSeeInventory(IInventory inv, @Nullable EntityPlayerMP ep) {
+        inventory = inv;
+        player = ep;
+    }
 
-	// @Override
-	// public boolean isEmpty() {
-	// 	return inventory.isEmpty();
-	// }
+    @Override
+    public int getSizeInventory() {
+        return 45;
+    }
 
-	public int getSlot(int slot) {
-		if (slot == 8) {
-			return 40;
-		} else if (slot >= 0 && slot <= 3) {
-			return 39 - slot;
-		} else if (slot >= 9 && slot <= 35) {
-			return slot;
-		} else if (slot >= 36 && slot <= 44) {
-			return slot - 36;
-		}
+    // @Override
+    // public boolean isEmpty() {
+    // return inventory.isEmpty();
+    // }
 
-		return -1;
-	}
+    public int getSlot(int slot) {
+        if (slot == 8) {
+            return 40;
+        } else if (slot >= 0 && slot <= 3) {
+            return 39 - slot;
+        } else if (slot >= 9 && slot <= 35) {
+            return slot;
+        } else if (slot >= 36 && slot <= 44) {
+            return slot - 36;
+        }
 
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		int slot = getSlot(index);
-		return slot == -1 ? null : inventory.getStackInSlot(slot);
-	}
+        return -1;
+    }
 
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		int slot = getSlot(index);
-		return slot == -1 ? null : inventory.decrStackSize(slot, count);
-	}
+    @Override
+    public ItemStack getStackInSlot(int index) {
+        int slot = getSlot(index);
+        return slot == -1 ? null : inventory.getStackInSlot(slot);
+    }
 
-	// public ItemStack removeStackFromSlot(int index) {
-	// 	int slot = getSlot(index);
-	// 	return slot == -1 ? null : inventory.removeStackFromSlot(slot);
-	// }
+    @Override
+    public ItemStack decrStackSize(int index, int count) {
+        int slot = getSlot(index);
+        return slot == -1 ? null : inventory.decrStackSize(slot, count);
+    }
 
-	@Override
-	public void setInventorySlotContents(int index, ItemStack is) {
-		int slot = getSlot(index);
+    // public ItemStack removeStackFromSlot(int index) {
+    // int slot = getSlot(index);
+    // return slot == -1 ? null : inventory.removeStackFromSlot(slot);
+    // }
 
-		if (slot != -1) {
-			inventory.setInventorySlotContents(slot, is);
-			markDirty();
-		}
-	}
+    @Override
+    public void setInventorySlotContents(int index, ItemStack is) {
+        int slot = getSlot(index);
 
-	@Override
-	public String getInventoryName() {
-		return inventory.getInventoryName();
-	}
+        if (slot != -1) {
+            inventory.setInventorySlotContents(slot, is);
+            markDirty();
+        }
+    }
 
-	@Override
-	public boolean hasCustomInventoryName() {
-		return true;
-	}
+    @Override
+    public String getInventoryName() {
+        return inventory.getInventoryName();
+    }
 
-	@Override
-	public void closeInventory() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public boolean hasCustomInventoryName() {
+        return true;
+    }
 
-	@Override
-	public ItemStack getStackInSlotOnClosing(int index) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public void closeInventory() {
+        // TODO Auto-generated method stub
 
-	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    }
 
-	@Override
-	public void openInventory() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public ItemStack getStackInSlotOnClosing(int index) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public IChatComponent getDisplayName() {
-		if (player != null) {
-			return new ChatComponentText(player.getDisplayName());
-		}
+    @Override
+    public boolean isUseableByPlayer(EntityPlayer player) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-		return new ChatComponentText(inventory.getInventoryName());
-	}
+    @Override
+    public void openInventory() {
+        // TODO Auto-generated method stub
 
-	@Override
-	public int getInventoryStackLimit() {
-		return inventory.getInventoryStackLimit();
-	}
+    }
 
-	@Override
-	public void markDirty() {
-		inventory.markDirty();
+    public IChatComponent getDisplayName() {
+        if (player != null) {
+            return new ChatComponentText(player.getDisplayName());
+        }
 
-		if (player != null) {
-			player.openContainer.detectAndSendChanges();
-		}
-	}
+        return new ChatComponentText(inventory.getInventoryName());
+    }
 
-	public boolean isUsableByPlayer(EntityPlayer player) {
-		return true;
-	}
+    @Override
+    public int getInventoryStackLimit() {
+        return inventory.getInventoryStackLimit();
+    }
 
-	@Override
-	public boolean isItemValidForSlot(int index, ItemStack stack) {
-		int slot = getSlot(index);
-		return slot != -1 && inventory.isItemValidForSlot(slot, stack);
-	}
+    @Override
+    public void markDirty() {
+        inventory.markDirty();
 
-	public int getField(int id) {
-		return 0;
-	}
+        if (player != null) {
+            player.openContainer.detectAndSendChanges();
+        }
+    }
 
-	public void setField(int id, int value) {
-	}
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return true;
+    }
 
-	public int getFieldCount() {
-		return 0;
-	}
+    @Override
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        int slot = getSlot(index);
+        return slot != -1 && inventory.isItemValidForSlot(slot, stack);
+    }
 
-	// public void clear() {
-	// 	inventory.clear();
-	// }
+    public int getField(int id) {
+        return 0;
+    }
+
+    public void setField(int id, int value) {}
+
+    public int getFieldCount() {
+        return 0;
+    }
+
+    // public void clear() {
+    // inventory.clear();
+    // }
 }

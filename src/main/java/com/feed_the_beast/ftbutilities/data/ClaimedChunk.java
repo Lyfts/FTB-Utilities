@@ -6,101 +6,83 @@ import com.feed_the_beast.ftblib.lib.math.ChunkDimPos;
 /**
  * @author LatvianModder
  */
-public final class ClaimedChunk
-{
-	private final ChunkDimPos pos;
-	private final FTBUtilitiesTeamData teamData;
-	private boolean loaded;
-	private boolean invalid;
-	public Boolean forced;
+public final class ClaimedChunk {
 
-	public ClaimedChunk(ChunkDimPos c, FTBUtilitiesTeamData t)
-	{
-		pos = c;
-		teamData = t;
-		loaded = false;
-		invalid = false;
-		forced = null;
-	}
+    private final ChunkDimPos pos;
+    private final FTBUtilitiesTeamData teamData;
+    private boolean loaded;
+    private boolean invalid;
+    public Boolean forced;
 
-	public boolean isInvalid()
-	{
-		return invalid || !getTeam().isValid();
-	}
+    public ClaimedChunk(ChunkDimPos c, FTBUtilitiesTeamData t) {
+        pos = c;
+        teamData = t;
+        loaded = false;
+        invalid = false;
+        forced = null;
+    }
 
-	public void setInvalid()
-	{
-		if (!invalid)
-		{
-			invalid = true;
-			getTeam().markDirty();
-		}
-	}
+    public boolean isInvalid() {
+        return invalid || !getTeam().isValid();
+    }
 
-	public ChunkDimPos getPos()
-	{
-		return pos;
-	}
+    public void setInvalid() {
+        if (!invalid) {
+            invalid = true;
+            getTeam().markDirty();
+        }
+    }
 
-	public ForgeTeam getTeam()
-	{
-		return teamData.team;
-	}
+    public ChunkDimPos getPos() {
+        return pos;
+    }
 
-	public FTBUtilitiesTeamData getData()
-	{
-		return teamData;
-	}
+    public ForgeTeam getTeam() {
+        return teamData.team;
+    }
 
-	public boolean setLoaded(boolean v)
-	{
-		if (loaded != v)
-		{
-			loaded = v;
+    public FTBUtilitiesTeamData getData() {
+        return teamData;
+    }
 
-			if (ClaimedChunks.isActive())
-			{
-				ClaimedChunks.instance.markDirty();
-			}
+    public boolean setLoaded(boolean v) {
+        if (loaded != v) {
+            loaded = v;
 
-			getTeam().markDirty();
-			return true;
-		}
+            if (ClaimedChunks.isActive()) {
+                ClaimedChunks.instance.markDirty();
+            }
 
-		return false;
-	}
+            getTeam().markDirty();
+            return true;
+        }
 
-	public boolean isLoaded()
-	{
-		return loaded;
-	}
+        return false;
+    }
 
-	public boolean hasExplosions()
-	{
-		return teamData.hasExplosions();
-	}
+    public boolean isLoaded() {
+        return loaded;
+    }
 
-	public String toString()
-	{
-		return pos.toString() + '+' + loaded;
-	}
+    public boolean hasExplosions() {
+        return teamData.hasExplosions();
+    }
 
-	public int hashCode()
-	{
-		return pos.hashCode();
-	}
+    public String toString() {
+        return pos.toString() + '+' + loaded;
+    }
 
-	public boolean equals(Object o)
-	{
-		if (o == this)
-		{
-			return true;
-		}
-		else if (o != null && o.getClass() == ClaimedChunk.class)
-		{
-			return pos.equalsChunkDimPos(((ClaimedChunk) o).pos);
-		}
+    public int hashCode() {
+        return pos.hashCode();
+    }
 
-		return false;
-	}
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (o != null && o.getClass() == ClaimedChunk.class) {
+            return pos.equalsChunkDimPos(((ClaimedChunk) o).pos);
+        }
+
+        return false;
+    }
 }

@@ -4,12 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.feed_the_beast.ftblib.FTBLib;
-import com.feed_the_beast.ftblib.lib.command.CmdBase;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
-import com.feed_the_beast.ftbutilities.ranks.Rank;
-import com.feed_the_beast.ftbutilities.ranks.Ranks;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.event.ClickEvent;
@@ -18,96 +12,105 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
+import com.feed_the_beast.ftblib.FTBLib;
+import com.feed_the_beast.ftblib.lib.command.CmdBase;
+import com.feed_the_beast.ftblib.lib.util.StringUtils;
+import com.feed_the_beast.ftbutilities.ranks.Rank;
+import com.feed_the_beast.ftbutilities.ranks.Ranks;
+
 /**
  * @author LatvianModder
  */
 public class CmdInfo extends CmdBase {
-	public CmdInfo() {
-		super("info", Level.ALL);
-	}
 
-	@Override
-	public boolean isUsernameIndex(String[] args, int index) {
-		return index == 0;
-	}
+    public CmdInfo() {
+        super("info", Level.ALL);
+    }
 
-	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-		if (args.length == 1) {
-			return Ranks.isActive()
-					? getListOfStringsFromIterableMatchingLastWord(args, Ranks.INSTANCE.getRankNames(false))
-					: Collections.emptyList();
-		}
+    @Override
+    public boolean isUsernameIndex(String[] args, int index) {
+        return index == 0;
+    }
 
-		return super.addTabCompletionOptions(sender, args);
-	}
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return Ranks.isActive()
+                    ? getListOfStringsFromIterableMatchingLastWord(args, Ranks.INSTANCE.getRankNames(false))
+                    : Collections.emptyList();
+        }
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-		if (!Ranks.isActive()) {
-			throw FTBLib.error(sender, "feature_disabled_server");
-		}
+        return super.addTabCompletionOptions(sender, args);
+    }
 
-		checkArgs(sender, args, 1);
-		Rank rank = Ranks.INSTANCE.getRank(sender, args[0]);
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        if (!Ranks.isActive()) {
+            throw FTBLib.error(sender, "feature_disabled_server");
+        }
 
-		sender.addChatMessage(new ChatComponentText(""));
-		IChatComponent id = new ChatComponentText(
-				"[" + rank.getId() + (rank.comment.isEmpty() ? "]" : ("] - " + rank.comment)));
-		id.getChatStyle().setColor(EnumChatFormatting.YELLOW);
-		id.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, rank.getDisplayName()));
-		sender.addChatMessage(id);
+        checkArgs(sender, args, 1);
+        Rank rank = Ranks.INSTANCE.getRank(sender, args[0]);
 
-		Set<Rank> parents = rank.getParents();
+        sender.addChatMessage(new ChatComponentText(""));
+        IChatComponent id = new ChatComponentText(
+                "[" + rank.getId() + (rank.comment.isEmpty() ? "]" : ("] - " + rank.comment)));
+        id.getChatStyle().setColor(EnumChatFormatting.YELLOW);
+        id.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, rank.getDisplayName()));
+        sender.addChatMessage(id);
 
-		if (!parents.isEmpty()) {
-			IChatComponent t = new ChatComponentText("");
-			t.appendSibling(StringUtils.color(new ChatComponentText(Rank.NODE_PARENT), EnumChatFormatting.GOLD));
-			t.appendText(": ");
+        Set<Rank> parents = rank.getParents();
 
-			boolean first = true;
+        if (!parents.isEmpty()) {
+            IChatComponent t = new ChatComponentText("");
+            t.appendSibling(StringUtils.color(new ChatComponentText(Rank.NODE_PARENT), EnumChatFormatting.GOLD));
+            t.appendText(": ");
 
-			for (Rank r : parents) {
-				if (first) {
-					first = false;
-				} else {
-					t.appendText(", ");
-				}
+            boolean first = true;
 
-				IChatComponent t1 = new ChatComponentText(r.getId());
-				t1.getChatStyle().setColor(EnumChatFormatting.AQUA);
+            for (Rank r : parents) {
+                if (first) {
+                    first = false;
+                } else {
+                    t.appendText(", ");
+                }
 
-				if (!r.comment.isEmpty()) {
-					t1.getChatStyle().setChatHoverEvent(
-							new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(r.comment)));
-				}
+                IChatComponent t1 = new ChatComponentText(r.getId());
+                t1.getChatStyle().setColor(EnumChatFormatting.AQUA);
 
-				t1.getChatStyle()
-						.setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ranks info " + r.getId()));
-				t.appendSibling(t1);
-			}
+                if (!r.comment.isEmpty()) {
+                    t1.getChatStyle().setChatHoverEvent(
+                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(r.comment)));
+                }
 
-			sender.addChatMessage(t);
-		}
+                t1.getChatStyle()
+                        .setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ranks info " + r.getId()));
+                t.appendSibling(t1);
+            }
 
-		for (Rank.Entry entry : rank.permissions.values()) {
-			if (entry.node.equals(Rank.NODE_PARENT)) {
-				continue;
-			}
+            sender.addChatMessage(t);
+        }
 
-			IChatComponent t = new ChatComponentText("");
-			t.appendSibling(StringUtils.color(new ChatComponentText(entry.node), EnumChatFormatting.GOLD));
-			t.appendText(": ");
-			t.appendSibling(StringUtils.color(new ChatComponentText(entry.value), EnumChatFormatting.BLUE));
+        for (Rank.Entry entry : rank.permissions.values()) {
+            if (entry.node.equals(Rank.NODE_PARENT)) {
+                continue;
+            }
 
-			if (!entry.comment.isEmpty()) {
-				t.getChatStyle().setChatHoverEvent(
-						new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(entry.comment)));
-			}
+            IChatComponent t = new ChatComponentText("");
+            t.appendSibling(StringUtils.color(new ChatComponentText(entry.node), EnumChatFormatting.GOLD));
+            t.appendText(": ");
+            t.appendSibling(StringUtils.color(new ChatComponentText(entry.value), EnumChatFormatting.BLUE));
 
-			t.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
-					"/ranks set_permission " + rank.getId() + " " + entry.node + " " + entry.value));
-			sender.addChatMessage(t);
-		}
-	}
+            if (!entry.comment.isEmpty()) {
+                t.getChatStyle().setChatHoverEvent(
+                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(entry.comment)));
+            }
+
+            t.getChatStyle().setChatClickEvent(
+                    new ClickEvent(
+                            ClickEvent.Action.SUGGEST_COMMAND,
+                            "/ranks set_permission " + rank.getId() + " " + entry.node + " " + entry.value));
+            sender.addChatMessage(t);
+        }
+    }
 }

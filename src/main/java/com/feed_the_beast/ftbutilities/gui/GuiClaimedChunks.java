@@ -1,5 +1,18 @@
 package com.feed_the_beast.ftbutilities.gui;
 
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.ChunkCoordIntPair;
+
+import org.lwjgl.opengl.GL11;
+
 import com.feed_the_beast.ftblib.lib.client.CachedVertexData;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.Button;
@@ -13,180 +26,189 @@ import com.feed_the_beast.ftblib.lib.util.ServerUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksModify;
 import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksRequest;
-import org.lwjgl.opengl.GL11;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.world.ChunkCoordIntPair;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
 
 public class GuiClaimedChunks extends GuiChunkSelectorBase {
-	public static GuiClaimedChunks instance;
-	public static final ClientClaimedChunks.ChunkData[] chunkData = new ClientClaimedChunks.ChunkData[ChunkSelectorMap.TILES_GUI
-			* ChunkSelectorMap.TILES_GUI];
-	public static int claimedChunks, loadedChunks, maxClaimedChunks, maxLoadedChunks;
-	private static final ClientClaimedChunks.ChunkData NULL_CHUNK_DATA = new ClientClaimedChunks.ChunkData(
-			new ClientClaimedChunks.Team((short) 0), 0);
 
-	public static final CachedVertexData AREA = new CachedVertexData(GL11.GL_QUADS, false, true, false);
+    public static GuiClaimedChunks instance;
+    public static final ClientClaimedChunks.ChunkData[] chunkData = new ClientClaimedChunks.ChunkData[ChunkSelectorMap.TILES_GUI
+            * ChunkSelectorMap.TILES_GUI];
+    public static int claimedChunks, loadedChunks, maxClaimedChunks, maxLoadedChunks;
+    private static final ClientClaimedChunks.ChunkData NULL_CHUNK_DATA = new ClientClaimedChunks.ChunkData(
+            new ClientClaimedChunks.Team((short) 0),
+            0);
 
-	@Nullable
-	public static ClientClaimedChunks.ChunkData getAt(int x, int y) {
-		int i = x + y * ChunkSelectorMap.TILES_GUI;
-		return i < 0 || i >= chunkData.length ? null : chunkData[i];
-	}
+    public static final CachedVertexData AREA = new CachedVertexData(GL11.GL_QUADS, false, true, false);
 
-	public static boolean hasBorder(ClientClaimedChunks.ChunkData data, @Nullable ClientClaimedChunks.ChunkData with) {
-		if (with == null) {
-			with = NULL_CHUNK_DATA;
-		}
+    @Nullable
+    public static ClientClaimedChunks.ChunkData getAt(int x, int y) {
+        int i = x + y * ChunkSelectorMap.TILES_GUI;
+        return i < 0 || i >= chunkData.length ? null : chunkData[i];
+    }
 
-		return (data.flags != with.flags || data.team != with.team) && !with.isLoaded();
-	}
+    public static boolean hasBorder(ClientClaimedChunks.ChunkData data, @Nullable ClientClaimedChunks.ChunkData with) {
+        if (with == null) {
+            with = NULL_CHUNK_DATA;
+        }
 
+        return (data.flags != with.flags || data.team != with.team) && !with.isLoaded();
+    }
 
-	private static abstract class ButtonSide extends Button {
-		public ButtonSide(Panel panel, String text, Icon icon) {
-			super(panel, text, icon);
-			setSize(20, 20);
-		}
-	}
+    private static abstract class ButtonSide extends Button {
 
-	private final String currentDimName;
+        public ButtonSide(Panel panel, String text, Icon icon) {
+            super(panel, text, icon);
+            setSize(20, 20);
+        }
+    }
 
-	public GuiClaimedChunks() {
-		currentDimName = ServerUtils.getDimensionName(Minecraft.getMinecraft().theWorld.provider.dimensionId)
-				.getFormattedText();
-	}
+    private final String currentDimName;
 
-	@Override
-	public void onPostInit() {
-		new MessageClaimedChunksRequest(startX, startZ).sendToServer();
-		ChunkSelectorMap.getMap().resetMap(startX, startZ);
-	}
+    public GuiClaimedChunks() {
+        currentDimName = ServerUtils.getDimensionName(Minecraft.getMinecraft().theWorld.provider.dimensionId)
+                .getFormattedText();
+    }
 
-	@Override
-	public int getSelectionMode(MouseButton button) {
-		boolean claim = !isShiftKeyDown();
-		boolean flag = button.isLeft();
+    @Override
+    public void onPostInit() {
+        new MessageClaimedChunksRequest(startX, startZ).sendToServer();
+        ChunkSelectorMap.getMap().resetMap(startX, startZ);
+    }
 
-		if (isCtrlKeyDown()) {
-			blockMode = true;
-		}
+    @Override
+    public int getSelectionMode(MouseButton button) {
+        boolean claim = !isShiftKeyDown();
+        boolean flag = button.isLeft();
 
-		if (flag) {
-			return claim ? MessageClaimedChunksModify.CLAIM : MessageClaimedChunksModify.LOAD;
-		} else {
-			return claim ? MessageClaimedChunksModify.UNCLAIM : MessageClaimedChunksModify.UNLOAD;
-		}
-	}
+        if (isCtrlKeyDown()) {
+            blockMode = true;
+        }
 
-	@Override
-	public void onChunksSelected(Collection<ChunkCoordIntPair> chunks) {
-		new MessageClaimedChunksModify(startX, startZ, currentSelectionMode, chunks).sendToServer();
-	}
+        if (flag) {
+            return claim ? MessageClaimedChunksModify.CLAIM : MessageClaimedChunksModify.LOAD;
+        } else {
+            return claim ? MessageClaimedChunksModify.UNCLAIM : MessageClaimedChunksModify.UNLOAD;
+        }
+    }
 
-	@Override
-	public void drawArea(Tessellator tessellator) {
-		AREA.draw(tessellator);
-	}
+    @Override
+    public void onChunksSelected(Collection<ChunkCoordIntPair> chunks) {
+        new MessageClaimedChunksModify(startX, startZ, currentSelectionMode, chunks).sendToServer();
+    }
 
-	@Override
-	public void addCornerButtons(Panel panel) {
-		panel.add(new ButtonSide(panel, I18n.format("gui.close"), GuiIcons.ACCEPT) {
-			@Override
-			public void onClicked(MouseButton button) {
-				GuiHelper.playClickSound();
-				getGui().closeGui();
-			}
-		});
+    @Override
+    public void drawArea(Tessellator tessellator) {
+        AREA.draw(tessellator);
+    }
 
-		panel.add(new ButtonSide(panel, I18n.format("selectServer.refresh"), GuiIcons.REFRESH) {
-			@Override
-			public void onClicked(MouseButton button) {
-				GuiHelper.playClickSound();
-				new MessageClaimedChunksRequest(startX, startZ).sendToServer();
-				ChunkSelectorMap.getMap().resetMap(startX, startZ);
-			}
-		});
+    @Override
+    public void addCornerButtons(Panel panel) {
+        panel.add(new ButtonSide(panel, I18n.format("gui.close"), GuiIcons.ACCEPT) {
 
-		if (maxClaimedChunks >= 0) {
-			panel.add(new ButtonSide(panel, I18n.format("ftbutilities.lang.chunks.unclaim_all_dim", currentDimName),
-					GuiIcons.REMOVE) {
-				@Override
-				public void onClicked(MouseButton button) {
-					GuiHelper.playClickSound();
-					String s = I18n.format("ftbutilities.lang.chunks.unclaim_all_dim_q", currentDimName);
-					openYesNo(s, "", () -> ClientUtils.execClientCommand(
-							"/chunks unclaim_all " + Minecraft.getMinecraft().theWorld.provider.dimensionId));
-				}
-			});
+            @Override
+            public void onClicked(MouseButton button) {
+                GuiHelper.playClickSound();
+                getGui().closeGui();
+            }
+        });
 
-			panel.add(new ButtonSide(panel, I18n.format("ftbutilities.lang.chunks.unclaim_all"), GuiIcons.REMOVE) {
-				@Override
-				public void onClicked(MouseButton button) {
-					GuiHelper.playClickSound();
-					String s = I18n.format("ftbutilities.lang.chunks.unclaim_all_q");
-					openYesNo(s, "", () -> ClientUtils.execClientCommand("/chunks unclaim_all"));
-				}
-			});
-		}
+        panel.add(new ButtonSide(panel, I18n.format("selectServer.refresh"), GuiIcons.REFRESH) {
 
-		panel.add(new ButtonSide(panel, I18n.format("gui.info"), GuiIcons.INFO) {
-			@Override
-			public void onClicked(MouseButton button) {
-				GuiHelper.playClickSound();
-				handleClick("https://github.com/FTBTeam/FTB-Chunks/wiki");
-			}
-		});
-	}
+            @Override
+            public void onClicked(MouseButton button) {
+                GuiHelper.playClickSound();
+                new MessageClaimedChunksRequest(startX, startZ).sendToServer();
+                ChunkSelectorMap.getMap().resetMap(startX, startZ);
+            }
+        });
 
-	@Override
-	public void addCornerText(List<String> list, Corner corner) {
-		if (maxClaimedChunks < 0) {
-			if (corner == Corner.BOTTOM_RIGHT) {
-				if (maxClaimedChunks == -2) {
-					list.add(EnumChatFormatting.RED + I18n.format("ftblib.lang.team.error.no_team"));
-				} else {
-					list.add(EnumChatFormatting.RED + I18n.format("feature_disabled_server"));
-				}
-			}
+        if (maxClaimedChunks >= 0) {
+            panel.add(
+                    new ButtonSide(
+                            panel,
+                            I18n.format("ftbutilities.lang.chunks.unclaim_all_dim", currentDimName),
+                            GuiIcons.REMOVE) {
 
-			return;
-		}
+                        @Override
+                        public void onClicked(MouseButton button) {
+                            GuiHelper.playClickSound();
+                            String s = I18n.format("ftbutilities.lang.chunks.unclaim_all_dim_q", currentDimName);
+                            openYesNo(
+                                    s,
+                                    "",
+                                    () -> ClientUtils.execClientCommand(
+                                            "/chunks unclaim_all "
+                                                    + Minecraft.getMinecraft().theWorld.provider.dimensionId));
+                        }
+                    });
 
-		switch (corner) {
-			case BOTTOM_RIGHT:
-				list.add(I18n.format("ftbutilities.lang.chunks.claimed_count", claimedChunks,
-						maxClaimedChunks == Integer.MAX_VALUE ? "\u221E" : Integer.toString(maxClaimedChunks)));
-				list.add(I18n.format("ftbutilities.lang.chunks.loaded_count", loadedChunks,
-						maxLoadedChunks == Integer.MAX_VALUE ? "\u221E" : Integer.toString(maxLoadedChunks)));
-				break;
-		}
-	}
+            panel.add(new ButtonSide(panel, I18n.format("ftbutilities.lang.chunks.unclaim_all"), GuiIcons.REMOVE) {
 
-	@Override
-	public void addButtonText(GuiChunkSelectorBase.MapButton button, List<String> list) {
-		ClientClaimedChunks.ChunkData data = chunkData[button.index];
+                @Override
+                public void onClicked(MouseButton button) {
+                    GuiHelper.playClickSound();
+                    String s = I18n.format("ftbutilities.lang.chunks.unclaim_all_q");
+                    openYesNo(s, "", () -> ClientUtils.execClientCommand("/chunks unclaim_all"));
+                }
+            });
+        }
 
-		if (data != null) {
-			list.add(data.team.nameComponent.getFormattedText());
-			list.add(EnumChatFormatting.GREEN + I18n.format("ftbutilities.lang.chunks.claimed_area"));
+        panel.add(new ButtonSide(panel, I18n.format("gui.info"), GuiIcons.INFO) {
 
-			if (data.isLoaded()) {
-				list.add(EnumChatFormatting.RED + I18n.format("ftbutilities.lang.chunks.upgrade.loaded"));
-			}
-		} else {
-			list.add(EnumChatFormatting.DARK_GREEN + I18n.format("ftbutilities.lang.chunks.wilderness"));
-		}
+            @Override
+            public void onClicked(MouseButton button) {
+                GuiHelper.playClickSound();
+                handleClick("https://github.com/FTBTeam/FTB-Chunks/wiki");
+            }
+        });
+    }
 
-		if (isCtrlKeyDown()) {
-			list.add(button.chunkPos.toString());
-		}
-	}
+    @Override
+    public void addCornerText(List<String> list, Corner corner) {
+        if (maxClaimedChunks < 0) {
+            if (corner == Corner.BOTTOM_RIGHT) {
+                if (maxClaimedChunks == -2) {
+                    list.add(EnumChatFormatting.RED + I18n.format("ftblib.lang.team.error.no_team"));
+                } else {
+                    list.add(EnumChatFormatting.RED + I18n.format("feature_disabled_server"));
+                }
+            }
+
+            return;
+        }
+
+        switch (corner) {
+            case BOTTOM_RIGHT:
+                list.add(
+                        I18n.format(
+                                "ftbutilities.lang.chunks.claimed_count",
+                                claimedChunks,
+                                maxClaimedChunks == Integer.MAX_VALUE ? "\u221E" : Integer.toString(maxClaimedChunks)));
+                list.add(
+                        I18n.format(
+                                "ftbutilities.lang.chunks.loaded_count",
+                                loadedChunks,
+                                maxLoadedChunks == Integer.MAX_VALUE ? "\u221E" : Integer.toString(maxLoadedChunks)));
+                break;
+        }
+    }
+
+    @Override
+    public void addButtonText(GuiChunkSelectorBase.MapButton button, List<String> list) {
+        ClientClaimedChunks.ChunkData data = chunkData[button.index];
+
+        if (data != null) {
+            list.add(data.team.nameComponent.getFormattedText());
+            list.add(EnumChatFormatting.GREEN + I18n.format("ftbutilities.lang.chunks.claimed_area"));
+
+            if (data.isLoaded()) {
+                list.add(EnumChatFormatting.RED + I18n.format("ftbutilities.lang.chunks.upgrade.loaded"));
+            }
+        } else {
+            list.add(EnumChatFormatting.DARK_GREEN + I18n.format("ftbutilities.lang.chunks.wilderness"));
+        }
+
+        if (isCtrlKeyDown()) {
+            list.add(button.chunkPos.toString());
+        }
+    }
 }

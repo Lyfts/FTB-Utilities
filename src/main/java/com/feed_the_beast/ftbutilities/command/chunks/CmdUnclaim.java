@@ -1,5 +1,9 @@
 package com.feed_the_beast.ftbutilities.command.chunks;
 
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
@@ -11,36 +15,35 @@ import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesPermissions;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 /**
  * @author LatvianModder
  */
 public class CmdUnclaim extends CmdBase {
-	public CmdUnclaim() {
-		super("unclaim", Level.ALL);
-	}
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-		if (!ClaimedChunks.isActive()) {
-			throw FTBLib.error(sender, "feature_disabled_server");
-		}
+    public CmdUnclaim() {
+        super("unclaim", Level.ALL);
+    }
 
-		EntityPlayerMP player = getCommandSenderAsPlayer(sender);
-		ForgePlayer p = CommandUtils.getForgePlayer(player);
-		ChunkDimPos pos = new ChunkDimPos(player);
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        if (!ClaimedChunks.isActive()) {
+            throw FTBLib.error(sender, "feature_disabled_server");
+        }
 
-		if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNCLAIM)
-				&& ClaimedChunks.instance.unclaimChunk(p, pos)) {
-			Notification.of(FTBUtilitiesNotifications.CHUNK_MODIFIED,
-					FTBUtilities.lang(player, "ftbutilities.lang.chunks.chunk_unclaimed")).send(
-							player.mcServer, player);
-			FTBUtilitiesNotifications.updateChunkMessage(player, pos);
-		} else {
-			FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
-		}
-	}
+        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+        ForgePlayer p = CommandUtils.getForgePlayer(player);
+        ChunkDimPos pos = new ChunkDimPos(player);
+
+        if (ClaimedChunks.instance.canPlayerModify(p, pos, FTBUtilitiesPermissions.CLAIMS_OTHER_UNCLAIM)
+                && ClaimedChunks.instance.unclaimChunk(p, pos)) {
+            Notification
+                    .of(
+                            FTBUtilitiesNotifications.CHUNK_MODIFIED,
+                            FTBUtilities.lang(player, "ftbutilities.lang.chunks.chunk_unclaimed"))
+                    .send(player.mcServer, player);
+            FTBUtilitiesNotifications.updateChunkMessage(player, pos);
+        } else {
+            FTBUtilitiesNotifications.sendCantModifyChunk(player.mcServer, player);
+        }
+    }
 }

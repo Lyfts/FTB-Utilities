@@ -1,5 +1,9 @@
 package com.feed_the_beast.ftbutilities.command;
 
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.EnumChatFormatting;
+
 import com.feed_the_beast.ftblib.lib.command.CmdBase;
 import com.feed_the_beast.ftblib.lib.command.CommandUtils;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
@@ -9,37 +13,34 @@ import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesPlayerData;
 import com.feed_the_beast.ftbutilities.net.MessageUpdateTabName;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.EnumChatFormatting;
-
 public class CmdNickFor extends CmdBase {
-	public CmdNickFor() {
-		super("nickfor", Level.OP);
-	}
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-		checkArgs(sender, args, 2);
-		ForgePlayer player = CommandUtils.getForgePlayer(sender, args[0]);
+    public CmdNickFor() {
+        super("nickfor", Level.OP);
+    }
 
-		FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(player);
-		data.setNickname(StringUtils.joinSpaceUntilEnd(1, args).trim());
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        checkArgs(sender, args, 2);
+        ForgePlayer player = CommandUtils.getForgePlayer(sender, args[0]);
 
-		if (data.getNickname().isEmpty()) {
-			sender.addChatMessage(FTBUtilities.lang(sender, "ftbutilities.lang.nickname_reset"));
-		} else {
-			String name = StringUtils.addFormatting(data.getNickname());
+        FTBUtilitiesPlayerData data = FTBUtilitiesPlayerData.get(player);
+        data.setNickname(StringUtils.joinSpaceUntilEnd(1, args).trim());
 
-			if (name.indexOf(StringUtils.FORMATTING_CHAR) != -1) {
-				name += EnumChatFormatting.RESET;
-			}
+        if (data.getNickname().isEmpty()) {
+            sender.addChatMessage(FTBUtilities.lang(sender, "ftbutilities.lang.nickname_reset"));
+        } else {
+            String name = StringUtils.addFormatting(data.getNickname());
 
-			sender.addChatMessage(FTBUtilities.lang(sender, "ftbutilities.lang.nickname_changed", name));
-		}
+            if (name.indexOf(StringUtils.FORMATTING_CHAR) != -1) {
+                name += EnumChatFormatting.RESET;
+            }
 
-		if (FTBUtilitiesConfig.chat.replace_tab_names) {
-			new MessageUpdateTabName(player.getPlayer()).sendToAll();
-		}
-	}
+            sender.addChatMessage(FTBUtilities.lang(sender, "ftbutilities.lang.nickname_changed", name));
+        }
+
+        if (FTBUtilitiesConfig.chat.replace_tab_names) {
+            new MessageUpdateTabName(player.getPlayer()).sendToAll();
+        }
+    }
 }

@@ -6,17 +6,15 @@ import com.feed_the_beast.ftbutilities.net.MessageClaimedChunksUpdate;
 /**
  * @author LatvianModder
  */
-public class UpdateClientDataEvent extends FTBUtilitiesEvent
-{
-	private final MessageClaimedChunksUpdate message;
+public class UpdateClientDataEvent extends FTBUtilitiesEvent {
 
-	public UpdateClientDataEvent(MessageClaimedChunksUpdate m)
-	{
-		message = m;
-	}
+    private final MessageClaimedChunksUpdate message;
 
-	public MessageClaimedChunksUpdate getMessage()
-	{
-		return message;
-	}
+    public UpdateClientDataEvent(MessageClaimedChunksUpdate m) {
+        message = m;
+    }
+
+    public MessageClaimedChunksUpdate getMessage() {
+        return message;
+    }
 }

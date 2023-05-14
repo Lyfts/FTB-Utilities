@@ -1,109 +1,97 @@
 package com.feed_the_beast.ftbutilities.ranks;
 
+import java.util.Collection;
+
+import javax.annotation.Nullable;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+
 import com.feed_the_beast.ftblib.lib.config.*;
 import com.feed_the_beast.ftblib.lib.util.permission.DefaultPermissionHandler;
 import com.feed_the_beast.ftblib.lib.util.permission.DefaultPermissionLevel;
 import com.feed_the_beast.ftblib.lib.util.permission.IPermissionHandler;
 import com.feed_the_beast.ftblib.lib.util.permission.context.IContext;
 import com.mojang.authlib.GameProfile;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
 
 /**
  * @author LatvianModder
  */
-public enum FTBUtilitiesPermissionHandler implements IPermissionHandler, IRankConfigHandler
-{
-	INSTANCE;
+public enum FTBUtilitiesPermissionHandler implements IPermissionHandler, IRankConfigHandler {
 
-	@Override
-	public void registerNode(String node, DefaultPermissionLevel level, String desc)
-	{
-		DefaultPermissionHandler.INSTANCE.registerNode(node, level, desc);
-	}
+    INSTANCE;
 
-	@Override
-	public Collection<String> getRegisteredNodes()
-	{
-		return DefaultPermissionHandler.INSTANCE.getRegisteredNodes();
-	}
+    @Override
+    public void registerNode(String node, DefaultPermissionLevel level, String desc) {
+        DefaultPermissionHandler.INSTANCE.registerNode(node, level, desc);
+    }
 
-	@Override
-	public boolean hasPermission(GameProfile profile, String node, @Nullable IContext context)
-	{
-		if (context != null && context.getWorld() != null)
-		{
-			if (context.getWorld().isRemote)
-			{
-				return DefaultPermissionHandler.INSTANCE.getDefaultPermissionLevel(node) == DefaultPermissionLevel.ALL;
-			}
-		}
-		else if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT)
-		{
-			return DefaultPermissionHandler.INSTANCE.getDefaultPermissionLevel(node) == DefaultPermissionLevel.ALL;
-		}
+    @Override
+    public Collection<String> getRegisteredNodes() {
+        return DefaultPermissionHandler.INSTANCE.getRegisteredNodes();
+    }
 
-		if (profile.getId() == null) //TODO: PR this fix in Forge
-		{
-			if (profile.getName() == null)
-			{
-				return false;
-			}
+    @Override
+    public boolean hasPermission(GameProfile profile, String node, @Nullable IContext context) {
+        if (context != null && context.getWorld() != null) {
+            if (context.getWorld().isRemote) {
+                return DefaultPermissionHandler.INSTANCE.getDefaultPermissionLevel(node) == DefaultPermissionLevel.ALL;
+            }
+        } else if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            return DefaultPermissionHandler.INSTANCE.getDefaultPermissionLevel(node) == DefaultPermissionLevel.ALL;
+        }
 
-			profile = new GameProfile(EntityPlayer.func_146094_a(profile), profile.getName());
-		}
+        if (profile.getId() == null) // TODO: PR this fix in Forge
+        {
+            if (profile.getName() == null) {
+                return false;
+            }
 
-		switch (Ranks.INSTANCE.getPermissionResult(profile, node, true))
-		{
-			case ALLOW:
-				return true;
-			case DENY:
-				return false;
-			default:
-				return DefaultPermissionHandler.INSTANCE.hasPermission(profile, node, context);
-		}
-	}
+            profile = new GameProfile(EntityPlayer.func_146094_a(profile), profile.getName());
+        }
 
-	@Override
-	public String getNodeDescription(String node)
-	{
-		return DefaultPermissionHandler.INSTANCE.getNodeDescription(node);
-	}
+        switch (Ranks.INSTANCE.getPermissionResult(profile, node, true)) {
+            case ALLOW:
+                return true;
+            case DENY:
+                return false;
+            default:
+                return DefaultPermissionHandler.INSTANCE.hasPermission(profile, node, context);
+        }
+    }
 
-	@Override
-	public void registerRankConfig(RankConfigValueInfo info)
-	{
-		DefaultRankConfigHandler.INSTANCE.registerRankConfig(info);
-	}
+    @Override
+    public String getNodeDescription(String node) {
+        return DefaultPermissionHandler.INSTANCE.getNodeDescription(node);
+    }
 
-	@Override
-	public Collection<RankConfigValueInfo> getRegisteredConfigs()
-	{
-		return DefaultRankConfigHandler.INSTANCE.getRegisteredConfigs();
-	}
+    @Override
+    public void registerRankConfig(RankConfigValueInfo info) {
+        DefaultRankConfigHandler.INSTANCE.registerRankConfig(info);
+    }
 
-	@Override
-	public ConfigValue getConfigValue(MinecraftServer server, GameProfile profile, String node)
-	{
-		ConfigValue value = ConfigNull.INSTANCE;
+    @Override
+    public Collection<RankConfigValueInfo> getRegisteredConfigs() {
+        return DefaultRankConfigHandler.INSTANCE.getRegisteredConfigs();
+    }
 
-		if (Ranks.isActive())
-		{
-			value = Ranks.INSTANCE.getPermission(profile, node, true);
-		}
+    @Override
+    public ConfigValue getConfigValue(MinecraftServer server, GameProfile profile, String node) {
+        ConfigValue value = ConfigNull.INSTANCE;
 
-		return value.isNull() ? DefaultRankConfigHandler.INSTANCE.getConfigValue(server, profile, node) : value;
-	}
+        if (Ranks.isActive()) {
+            value = Ranks.INSTANCE.getPermission(profile, node, true);
+        }
 
-	@Nullable
-	@Override
-	public RankConfigValueInfo getInfo(String node)
-	{
-		return DefaultRankConfigHandler.INSTANCE.getInfo(node);
-	}
+        return value.isNull() ? DefaultRankConfigHandler.INSTANCE.getConfigValue(server, profile, node) : value;
+    }
+
+    @Nullable
+    @Override
+    public RankConfigValueInfo getInfo(String node) {
+        return DefaultRankConfigHandler.INSTANCE.getInfo(node);
+    }
 }
