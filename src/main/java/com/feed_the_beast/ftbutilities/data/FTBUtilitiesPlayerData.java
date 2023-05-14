@@ -1,11 +1,5 @@
 package com.feed_the_beast.ftbutilities.data;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.FTBLibCommon;
 import com.feed_the_beast.ftblib.lib.EnumMessageLocation;
@@ -35,6 +29,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.function.Function;
 
 /**
  * @author LatvianModder
@@ -134,7 +133,6 @@ public class FTBUtilitiesPlayerData extends PlayerData {
 			} else {
 				universe.scheduleTask(TimeType.MILLIS, System.currentTimeMillis() + 1000L,
 						new TeleportTask(teleportType, player, timer, startSeconds, secondsLeft - 1, pos, extraTask));
-				player.addChatMessage(new ChatComponentText(Integer.toString(secondsLeft - 1)));
 				player.addChatMessage(StringUtils.color(
 						FTBLib.lang(player, "stand_still", startSeconds).appendText(" [" + (secondsLeft - 1) + "]"),
 						EnumChatFormatting.GOLD));
