@@ -1,4 +1,4 @@
-# FTB Library for 1.7.10
+# FTB Utilities (1.12) backported to 1.7.10
 
 ### License
 
