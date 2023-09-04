@@ -1,11 +1,11 @@
 package ftb.utils.net;
 
-import latmod.lib.ByteCount;
 import cpw.mods.fml.common.network.simpleimpl.*;
 import ftb.lib.LMAccessToken;
 import ftb.lib.api.net.LMNetworkWrapper;
 import ftb.utils.world.*;
 import ftb.utils.world.claims.ClaimedChunk;
+import latmod.lib.ByteCount;
 
 public class MessageClaimChunk extends MessageFTBU {
 
@@ -13,7 +13,7 @@ public class MessageClaimChunk extends MessageFTBU {
     public static final int ID_UNCLAIM = 1;
     public static final int ID_UNCLAIM_ALL = 2;
     public static final int ID_UNCLAIM_ALL_DIMS = 3;
-    public static final int ID_LOAD = 4;
+    public static final int ID_CLAIM_AND_LOAD = 4;
     public static final int ID_UNLOAD = 5;
 
     public MessageClaimChunk() {
@@ -55,8 +55,11 @@ public class MessageClaimChunk extends MessageFTBU {
             return new MessageAreaUpdate(p, cx, cz, dim, 1, 1);
         } else if (type == ID_UNCLAIM_ALL) p.unclaimAllChunks(Integer.valueOf(dim));
         else if (type == ID_UNCLAIM_ALL_DIMS) p.unclaimAllChunks(null);
-        else if (type == ID_LOAD) p.setLoaded(dim, cx, cz, true);
-        else if (type == ID_UNLOAD) p.setLoaded(dim, cx, cz, false);
+        else if (type == ID_CLAIM_AND_LOAD) {
+            p.claimChunk(dim, cx, cz);
+            p.setLoaded(dim, cx, cz, true);
+            return new MessageAreaUpdate(p, cx, cz, dim, 1, 1);
+        } else if (type == ID_UNLOAD) p.setLoaded(dim, cx, cz, false);
         return null;
     }
 }

@@ -3,8 +3,6 @@ package ftb.utils.mod.client.gui.claims;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import latmod.lib.MathHelperLM;
-
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,6 +22,7 @@ import ftb.utils.mod.client.FTBUClient;
 import ftb.utils.net.*;
 import ftb.utils.world.*;
 import ftb.utils.world.claims.ChunkType;
+import latmod.lib.MathHelperLM;
 
 @SideOnly(Side.CLIENT)
 public class GuiClaimChunks extends GuiLM implements GuiYesNoCallback // implements IClientActionGui
@@ -341,7 +340,7 @@ public class GuiClaimChunks extends GuiLM implements GuiYesNoCallback // impleme
                     gui.adminToken,
                     chunkX,
                     chunkY,
-                    (b == 0) ? (ctrl ? MessageClaimChunk.ID_LOAD : MessageClaimChunk.ID_CLAIM)
+                    (b == 0) ? (ctrl ? MessageClaimChunk.ID_CLAIM_AND_LOAD : MessageClaimChunk.ID_CLAIM)
                             : (ctrl ? MessageClaimChunk.ID_UNLOAD : MessageClaimChunk.ID_UNCLAIM)).sendToServer();
             FTBLibClient.playClickSound();
         }
